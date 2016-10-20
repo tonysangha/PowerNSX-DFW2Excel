@@ -37,6 +37,7 @@ Once a connection to NSX Manager and vCenter has been established, the script st
 
 **Issues**
 
+- Layer 3 DFW Policy only documented
 - Security Tags not documented in their own worksheet
 - Negated fields not populated from configuration
 
