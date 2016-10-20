@@ -23,6 +23,7 @@ To run the script, make sure your Powershell Execution is set to *remotesigned*
 ``` Powershell
 Set-ExecutionPolicy remotesigned
 ```
+Download and save the script offline.
 
 To run the script, execute the command:
 
@@ -32,6 +33,8 @@ To run the script, execute the command:
 
 You are prompted to connect to an NSX Manager instance and enter your credentials, and PowerNSX also initiates a connection to vCenter. Please ensure you select yes and enter in the correct credentials. 
 Once a connection to NSX Manager and vCenter has been established, the script starts an Excel Workbook and populates the worksheets with the data as required. 
+
+Once the script has finished running, remember to save your Excel Workbook to a location of your choosing. 
 
 # MIT License
 
