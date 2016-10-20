@@ -22,8 +22,7 @@ To run the script, make sure your Powershell Execution is set to *remotesigned*
 
 To run the script, execute the command:
 
-``` .\DFW2Excel.ps1 
-IP or FQDN of NSX Manager? ```
+``` .\DFW2Excel.ps1 ```
 
 You are prompted to connect to an NSX Manager instance and enter your credentials, and PowerNSX also initiates a connection to vCenter. Please ensure you select yes and enter in the correct credentials. 
 Once a connection to NSX Manager and vCenter has been established, the script starts an Excel Workbook and populates the worksheets with the data as required. 
