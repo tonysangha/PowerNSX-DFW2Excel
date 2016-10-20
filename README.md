@@ -33,14 +33,6 @@ To run the script, execute the command:
 You are prompted to connect to an NSX Manager instance and enter your credentials, and PowerNSX also initiates a connection to vCenter. Please ensure you select yes and enter in the correct credentials. 
 Once a connection to NSX Manager and vCenter has been established, the script starts an Excel Workbook and populates the worksheets with the data as required. 
 
-## Version 0.1 Commit notes
-
-**Issues**
-
-- Layer 3 DFW Policy only documented
-- Security Tags not documented in their own worksheet
-- Negated fields not populated from configuration
-
 # MIT License
 
 Copyright (c) [2016] [Tony Sangha]
