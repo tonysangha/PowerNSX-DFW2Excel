@@ -22,7 +22,7 @@ To run the script, make sure your Powershell Execution is set to *remotesigned*
 
 To run the script, execute the command:
 
-```.\DFW2Excel.ps1```
+``` .\DFW2Excel.ps1 ```
 
 You will be prompted to connect to an NSX Manager and enter the username/password, PowerNSX will also
 initate a connection to vCenter, please ensure you select yes and enter in the correct credentials. 
