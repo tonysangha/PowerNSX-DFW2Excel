@@ -33,8 +33,3 @@ Once a connection to NSX Manager and vCenter has been established, the script st
 
 - Security Tags not documented in their own worksheet
 - Negated fields not populated from configuration
-
-**Disclaimer**:
-
-Please test this script and development environment and ensure that it works as expected before using it a 
-production environment. 
