@@ -158,7 +158,6 @@ function l3_rules($sheet){
     $sheet.Cells.Item(3,17) = "Log"
 
     $range2 = $sheet.Range("a3", "q3")
-    $range2.Font.Size = $subTitleFontSize
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -302,7 +301,6 @@ function sg_ws($sheet){
     $sheet.Cells.Item(2,8) = "Dynamic Query Criteria"
     $sheet.Cells.Item(2,9) = "Dynamic Query Value"
     $range2 = $sheet.Range("a2", "j2")
-    $range2.Font.Size = $subTitleFontSize
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -358,7 +356,6 @@ function pop_sg_ws($sheet){
     $sheet.Cells.Item($row,2) = "VM ID"
     $sheet.Cells.Item($row,3) = "VM Name"
     $range3 = $sheet.Range("a"+$row, "c"+$row)
-    $range3.Font.Size = $subTitleFontSize
     $range3.Font.Bold = $subTitleFontBold
     $range3.Interior.ColorIndex = $subTitleInteriorColor
     $range3.Font.Name = $subTitleFontName
@@ -399,7 +396,6 @@ function ipset_ws($sheet){
     $sheet.Cells.Item(2,3) = "Universal"
     $sheet.Cells.Item(2,4) = "Description"
     $range2 = $sheet.Range("a2", "d2")
-    $range2.Font.Size = $subTitleFontSize
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -442,7 +438,6 @@ function macset_ws($sheet){
     $sheet.Cells.Item(2,2) = "Value"
     $sheet.Cells.Item(2,3) = "Description"
     $range2 = $sheet.Range("a2", "c2")
-    $range2.Font.Size = $subTitleFontSize
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -488,7 +483,6 @@ function services_ws($sheet){
     $sheet.Cells.Item(2,4) = "Value"
     $sheet.Cells.Item(2,5) = "Universal"
     $range2 = $sheet.Range("a2", "e2")
-    $range2.Font.Size = $subTitleFontSize
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -532,7 +526,6 @@ function service_groups_ws($sheet){
     $sheet.Cells.Item(2,3) = "Scope"
     $sheet.Cells.Item(2,4) = "Service Members"
     $range2 = $sheet.Range("a2", "d2")
-    $range2.Font.Size = $subTitleFontSize
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -581,7 +574,6 @@ function sec_tags_ws($sheet){
     $sheet.Cells.Item(2,3) = "VM Members"
     $sheet.Cells.Item(2,4) = "Description"
     $range2 = $sheet.Range("a2", "d2")
-    $range2.Font.Size = $subTitleFontSize
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -618,7 +610,6 @@ function ex_list_ws($sheet){
 
     $sheet.Cells.Item(2,1) = "VM Name"
     $range2 = $sheet.Range("a2", "a2")
-    $range2.Font.Size = $subTitleFontSize
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -642,5 +633,20 @@ function pop_ex_list_ws($sheet){
 # Ask from user
 $nsx_mgr = Read-Host "IP or FQDN of NSX Manager? "
 Connect-NSXServer $nsx_mgr
-startExcel
+
+$version = Get-NsxManagerSystemSummary
+$major_version = $version.versionInfo.majorVersion
+$minor_version = $version.versionInfo.minorVersion
+
+# Only tested to run on NSX 6.2.x installations
+
+if($major_version -eq 6 -And $minor_version -eq 2){
+	startExcel
+}
+else{
+
+		Write-Warning "NSX Manager version is not in the NSX 6.2.x release train"
+}
+
+
 
