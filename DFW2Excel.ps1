@@ -87,10 +87,24 @@ function startExcel(){
     $usedRange.EntireColumn.Autofit()
 
     $ws6 = $wb.Worksheets.Add()
-    $ws6.Name = "Firewall"
-    dfw_ws($ws6)
+    $ws6.Name = "Security Tags"
+    sec_tags_ws($ws6)
     $usedRange = $ws6.UsedRange
     $usedRange.EntireColumn.Autofit()
+	
+	$ws7 = $wb.Worksheets.Add()
+    $ws7.Name = "DFW Exclusion list"
+    ex_list_ws($ws7)
+    $usedRange = $ws7.UsedRange
+    $usedRange.EntireColumn.Autofit()
+	
+	$ws8 = $wb.Worksheets.Add()
+    $ws8.Name = "Layer 3 Firewall"
+    dfw_ws($ws8)
+    $usedRange = $ws8.UsedRange
+    $usedRange.EntireColumn.Autofit()
+	
+	
 
 }
 
@@ -465,7 +479,7 @@ function services_ws($sheet){
     $sheet.Cells.Item(1,1).Font.ColorIndex = $titleFontColorIndex
     $sheet.Cells.Item(1,1).Font.Name = $titleFontName
     $sheet.Cells.Item(1,1).Interior.ColorIndex = $titleInteriorColor
-    $range1 = $sheet.Range("a1", "e1")
+    $range1 = $sheet.Range("a1", "f1")
     $range1.merge() | Out-Null
 
     $sheet.Cells.Item(2,1) = "Name"
@@ -517,7 +531,7 @@ function service_groups_ws($sheet){
     $sheet.Cells.Item(2,2) = "Universal"
     $sheet.Cells.Item(2,3) = "Scope"
     $sheet.Cells.Item(2,4) = "Service Members"
-    $range2 = $sheet.Range("a2", "e2")
+    $range2 = $sheet.Range("a2", "d2")
     $range2.Font.Size = $subTitleFontSize
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
@@ -547,7 +561,80 @@ function pop_service_groups_ws($sheet){
         }
     }
 }
+########################################################
+#    Security Tag Worksheet
+########################################################
 
+function sec_tags_ws($sheet){
+
+    $sheet.Cells.Item(1,1) = "Security Tag Configuration"
+    $sheet.Cells.Item(1,1).Font.Size = $titleFontSize
+    $sheet.Cells.Item(1,1).Font.Bold = $titleFontBold
+    $sheet.Cells.Item(1,1).Font.ColorIndex = $titleFontColorIndex
+    $sheet.Cells.Item(1,1).Font.Name = $titleFontName
+    $sheet.Cells.Item(1,1).Interior.ColorIndex = $titleInteriorColor
+    $range1 = $sheet.Range("a1", "f1")
+    $range1.merge() | Out-Null
+
+    $sheet.Cells.Item(2,1) = "Security Tag Name"
+    $sheet.Cells.Item(2,2) = "Built-In"
+    $sheet.Cells.Item(2,3) = "VM Members"
+    $sheet.Cells.Item(2,4) = "Description"
+    $range2 = $sheet.Range("a2", "d2")
+    $range2.Font.Size = $subTitleFontSize
+    $range2.Font.Bold = $subTitleFontBold
+    $range2.Interior.ColorIndex = $subTitleInteriorColor
+    $range2.Font.Name = $subTitleFontName
+    pop_sec_tags_ws($sheet)
+}
+
+function pop_sec_tags_ws($sheet){
+
+    $row=3
+    $ST = get-nsxsecuritytag -includesystem
+
+    foreach ($tag in $ST) {
+        $sheet.Cells.Item($row,1) = $tag.name
+        $sheet.Cells.Item($row,2) = $tag.systemResource
+        $sheet.Cells.Item($row,3) = $tag.vmCount
+		$sheet.Cells.Item($row,4) = $tag.systemResource
+		$row++ # Increment Rows
+    }
+}
+########################################################
+#    Exclusion list Worksheet
+########################################################
+
+function ex_list_ws($sheet){
+
+    $sheet.Cells.Item(1,1) = "Exclusion List"
+    $sheet.Cells.Item(1,1).Font.Size = $titleFontSize
+    $sheet.Cells.Item(1,1).Font.Bold = $titleFontBold
+    $sheet.Cells.Item(1,1).Font.ColorIndex = $titleFontColorIndex
+    $sheet.Cells.Item(1,1).Font.Name = $titleFontName
+    $sheet.Cells.Item(1,1).Interior.ColorIndex = $titleInteriorColor
+    $range1 = $sheet.Range("a1", "f1")
+    $range1.merge() | Out-Null
+
+    $sheet.Cells.Item(2,1) = "VM Name"
+    $range2 = $sheet.Range("a2", "a2")
+    $range2.Font.Size = $subTitleFontSize
+    $range2.Font.Bold = $subTitleFontBold
+    $range2.Interior.ColorIndex = $subTitleInteriorColor
+    $range2.Font.Name = $subTitleFontName
+    pop_ex_list_ws($sheet)
+}
+
+function pop_ex_list_ws($sheet){
+
+    $row=3
+    $guests = Get-NsxFirewallExclusionListMember
+
+    foreach ($vm in $guests) {
+        $sheet.Cells.Item($row,1) = $vm.name
+		$row++ # Increment Rows
+    }
+}
 ########################################################
 #    Global Functions
 ########################################################
