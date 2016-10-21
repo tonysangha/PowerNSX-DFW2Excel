@@ -24,9 +24,16 @@ To run the script, make sure your Powershell Execution is set to *remotesigned*
 ``` Powershell
 Set-ExecutionPolicy remotesigned
 ```
-Download and save the script offline.
 
-To run the script, execute the command:
+PowerNSX is essential, therefore please ensure you have the latest version of PowerNSX installed,
+which can be done in an admnistrative PowerShell terminal with the following command:
+
+```Powershell
+Update-PowerNsx master
+```
+
+To execute the script, download it to your scripts folder and change into the folder from the PowerShell CLI
+terminal and execute the command:
 
 ``` Powershell
 .\DFW2Excel.ps1 
@@ -46,6 +53,8 @@ Release Date: 21/10/2016
 * Fixed Casting errors that were displayed on console
 * Implemented version check
 * New worksheet to document Security Tags and VM Membership
+* Negated Field in L3 Policy is now documented
+* DFW Exclusion List
 
 # MIT License
 
