@@ -17,6 +17,7 @@ Pre-requisites to run the script are:
 * [Microsoft Excel](https://products.office.com/en-au/excel) installed on the local system
 * Access to NSX Manager API with privileges
 * Access to vSphere Web Client and Privileges (Read)
+* Only currently tested on version 6.2.x of NSX
 
 To run the script, make sure your Powershell Execution is set to *remotesigned*
 
@@ -35,6 +36,16 @@ You are prompted to connect to an NSX Manager instance and enter your credential
 Once a connection to NSX Manager and vCenter has been established, the script starts an Excel Workbook and populates the worksheets with the data as required. 
 
 Once the script has finished running, remember to save your Excel Workbook to a location of your choosing. 
+
+### Release Notes
+
+Version 0.2 
+
+Release Date: 21/10/2016
+
+* Fixed Casting errors that were displayed on console
+* Implemented version check
+* New worksheet to document Security Tags and VM Membership
 
 # MIT License
 
