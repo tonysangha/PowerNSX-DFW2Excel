@@ -592,6 +592,25 @@ function pop_sec_tags_ws($sheet){
 		$sheet.Cells.Item($row,4) = $tag.systemResource
 		$row++ # Increment Rows
     }
+	
+	$sheet.Cells.Item($row,1) = "Security Tag Name"
+    $sheet.Cells.Item($row,2) = "VM Name"
+	$range3 = $sheet.Range("a"+$row, "b"+$row)
+	$range3.Font.Bold = $subTitleFontBold
+    $range3.Interior.ColorIndex = $subTitleInteriorColor
+    $range3.Font.Name = $subTitleFontName
+	
+	$row ++
+	
+	$tag_assign = $ST | Get-NsxSecurityTagAssignment
+	
+	foreach ($mem in $tag_assign){
+		
+		$sheet.Cells.Item($row,1) = $mem.SecurityTag.name
+        $sheet.Cells.Item($row,2) = $mem.VirtualMachine.name
+		$row++
+	}
+
 }
 ########################################################
 #    Exclusion list Worksheet
