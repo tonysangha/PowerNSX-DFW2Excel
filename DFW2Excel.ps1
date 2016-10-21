@@ -1,6 +1,6 @@
 # Author:   Tony Sangha
 # Blog:    tonysangha.com
-# Version:  0.1
+# Version:  0.2
 # PowerCLI v6.0
 # PowerNSX v2.0
 
@@ -602,8 +602,10 @@ function pop_sec_tags_ws($sheet){
 	
 	$row ++
 	
+	# Retrieve a list of all Tag Assignments
 	$tag_assign = $ST | Get-NsxSecurityTagAssignment
 	
+	# Traverse VM membership and populate spreadsheet
 	foreach ($mem in $tag_assign){
 		
 		$sheet.Cells.Item($row,1) = $mem.SecurityTag.name
