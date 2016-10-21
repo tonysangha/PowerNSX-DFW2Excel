@@ -209,6 +209,12 @@ function l3_rules($sheet){
                 $sheet.Cells.Item($srcRow,8) = "ANY"
                 $sheet.Cells.Item($srcRow,8).Font.ColorIndex = 45
             } else {
+				#If Negated field exists, document
+				if ($rule.sources.excluded -eq "True" ){
+					$sheet.Cells.Item($srcRow,6) = "NEGATE"
+					$sheet.Cells.Item($row,6).Font.ColorIndex = 3
+				}
+				
                 foreach($source in $rule.sources.source){
                     $sheet.Cells.Item($srcRow,7) = $source.type
 
@@ -231,6 +237,13 @@ function l3_rules($sheet){
                 $sheet.Cells.Item($dstRow,11) = "ANY"
                 $sheet.Cells.Item($dstRow,11).Font.ColorIndex = 45
             } else {
+			
+				#If Negated field exists, document
+				if ($rule.destinations.excluded -eq "True" ){
+					$sheet.Cells.Item($srcRow,9) = "NEGATE"
+					$sheet.Cells.Item($row,9).Font.ColorIndex = 3
+				}
+				
                 foreach($destination in $rule.destinations.destination){
                     $sheet.Cells.Item($dstRow,10) = $destination.type
                     if($destination.type -eq "Ipv4Address"){
