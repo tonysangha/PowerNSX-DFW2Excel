@@ -26,7 +26,7 @@ Set-ExecutionPolicy remotesigned
 ```
 
 PowerNSX is essential, therefore please ensure you have the latest version of PowerNSX installed,
-which can be done in an admnistrative PowerShell terminal with the following command:
+which can be updated in an administrative PowerShell terminal with the following command:
 
 ```Powershell
 Update-PowerNsx master
