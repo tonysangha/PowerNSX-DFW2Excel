@@ -1,6 +1,6 @@
 # Author:   Tony Sangha
 # Blog:    tonysangha.com
-# Version:  0.2
+# Version:  0.3
 # PowerCLI v6.0
 # PowerNSX v2.0
 
@@ -120,7 +120,7 @@ function dfw_ws($sheet){
     $sheet.Cells.Item(1,1).Font.ColorIndex = $titleFontColorIndex
     $sheet.Cells.Item(1,1).Font.Name = $titleFontName
     $sheet.Cells.Item(1,1).Interior.ColorIndex = $titleInteriorColor
-    $range1 = $sheet.Range("a1", "q1")
+    $range1 = $sheet.Range("a1", "s1")
     $range1.merge() | Out-Null
 
     l3_rules($sheet)
@@ -133,7 +133,7 @@ function l3_rules($sheet){
     $sheet.Cells.Item(2,1).Font.ColorIndex = $titleFontColorIndex
     $sheet.Cells.Item(2,1).Font.Name = $titleFontName
     $sheet.Cells.Item(2,1).Interior.ColorIndex = $titleInteriorColor
-    $range1 = $sheet.Range("a2", "q2")
+    $range1 = $sheet.Range("a2", "s2")
 
     $sheet.Cells.Item(3,1) = "Section Name"
     $sheet.Cells.Item(3,2) = "Section ID"
@@ -145,19 +145,21 @@ function l3_rules($sheet){
     $sheet.Cells.Item(3,6) = "Source Excluded (Negated)"
     $sheet.Cells.Item(3,7) = "Source Type"
     $sheet.Cells.Item(3,8) = "Source Name"
+	$sheet.Cells.Item(3,9) = "Source Object ID"
 
-    $sheet.Cells.Item(3,9) = "Destination Excluded (Negated)"
-    $sheet.Cells.Item(3,10) = "Destination Type"
-    $sheet.Cells.Item(3,11) = "Destination Name"
+    $sheet.Cells.Item(3,10) = "Destination Excluded (Negated)"
+    $sheet.Cells.Item(3,11) = "Destination Type"
+    $sheet.Cells.Item(3,12) = "Destination Name"
+	$sheet.Cells.Item(3,13) = "Destination Object ID"
 
-    $sheet.Cells.Item(3,12) = "Service Name"
-    $sheet.Cells.Item(3,13) = "Action"
-    $sheet.Cells.Item(3,14) = "Direction"
-    $sheet.Cells.Item(3,15) = "Packet Type"
-    $sheet.Cells.Item(3,16) = "Applied To"
-    $sheet.Cells.Item(3,17) = "Log"
+    $sheet.Cells.Item(3,14) = "Service Name"
+    $sheet.Cells.Item(3,15) = "Action"
+    $sheet.Cells.Item(3,16) = "Direction"
+    $sheet.Cells.Item(3,17) = "Packet Type"
+    $sheet.Cells.Item(3,18) = "Applied To"
+    $sheet.Cells.Item(3,19) = "Log"
 
-    $range2 = $sheet.Range("a3", "q3")
+    $range2 = $sheet.Range("a3", "s3")
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -190,16 +192,16 @@ function l3_rules($sheet){
 
             # Highlight Allow/Deny statements
             if($rule.action -eq "deny"){
-                $sheet.Cells.Item($row,13) = $rule.action
-                $sheet.Cells.Item($row,13).Font.ColorIndex = 3
+                $sheet.Cells.Item($row,15) = $rule.action
+                $sheet.Cells.Item($row,15).Font.ColorIndex = 3
             } elseif($rule.action -eq "allow"){
-                $sheet.Cells.Item($row,13) = $rule.action
-                $sheet.Cells.Item($row,13).Font.ColorIndex = 4
+                $sheet.Cells.Item($row,15) = $rule.action
+                $sheet.Cells.Item($row,15).Font.ColorIndex = 4
             }
 
-            $sheet.Cells.Item($row,14) = $rule.direction
-            $sheet.Cells.Item($row,15) = $rule.packetType
-            $sheet.Cells.Item($row,17) = $rule.logged
+            $sheet.Cells.Item($row,16) = $rule.direction
+            $sheet.Cells.Item($row,17) = $rule.packetType
+            $sheet.Cells.Item($row,19) = $rule.logged
 
             ###### Sources Section ######
             $srcRow = $row
@@ -224,6 +226,7 @@ function l3_rules($sheet){
                         $sheet.Cells.Item($srcRow,8) = $source.value
                     } else {
                         $sheet.Cells.Item($srcRow,8) = $source.name
+						$sheet.Cells.Item($srcRow,9) = $source.value
                     }
                 $srcRow++
                 }
@@ -234,24 +237,25 @@ function l3_rules($sheet){
 
             # If Destination does not exist, it must be set to ANY
             if (!$rule.destinations){
-                $sheet.Cells.Item($dstRow,11) = "ANY"
-                $sheet.Cells.Item($dstRow,11).Font.ColorIndex = 45
+                $sheet.Cells.Item($dstRow,13) = "ANY"
+                $sheet.Cells.Item($dstRow,13).Font.ColorIndex = 45
             } else {
 			
 				#If Negated field exists, document
 				if ($rule.destinations.excluded -eq "True" ){
-					$sheet.Cells.Item($srcRow,9) = "NEGATE"
-					$sheet.Cells.Item($row,9).Font.ColorIndex = 3
+					$sheet.Cells.Item($srcRow,10) = "NEGATE"
+					$sheet.Cells.Item($row,10).Font.ColorIndex = 3
 				}
 				
                 foreach($destination in $rule.destinations.destination){
-                    $sheet.Cells.Item($dstRow,10) = $destination.type
+                    $sheet.Cells.Item($dstRow,11) = $destination.type
                     if($destination.type -eq "Ipv4Address"){
-                        $sheet.Cells.Item($dstRow,11) = $destination.value
+                        $sheet.Cells.Item($dstRow,12) = $destination.value
                         } elseif($destination.type -eq "Ipv6Address") {
-                            $sheet.Cells.Item($dstRow,11) = $destination.value
+                            $sheet.Cells.Item($dstRow,12) = $destination.value
                         } else {
-                            $sheet.Cells.Item($dstRow,11) = $destination.name
+                            $sheet.Cells.Item($dstRow,12) = $destination.name
+							$sheet.Cells.Item($dstRow,13) = $destination.value
                         }
                     $dstRow++
                 }
@@ -262,11 +266,11 @@ function l3_rules($sheet){
 
             # If Service does not exist, it must be set to ANY
             if(!$rule.services){
-                $sheet.Cells.Item($svcRow,12) = "ANY"
-                $sheet.Cells.Item($svcRow,12).Font.ColorIndex = 45
+                $sheet.Cells.Item($svcRow,14) = "ANY"
+                $sheet.Cells.Item($svcRow,14).Font.ColorIndex = 45
             } else {
                 foreach($service in $rule.services.service){
-                    $sheet.Cells.Item($svcRow,12) = $service.name
+                    $sheet.Cells.Item($svcRow,14) = $service.name
                     $svcRow++
                 }
             }
@@ -275,14 +279,14 @@ function l3_rules($sheet){
             $appRow = $row
 
             foreach($appliedTo in $rule.appliedToList.appliedTo){
-                $sheet.Cells.Item($appRow,16) = $appliedTo.name
+                $sheet.Cells.Item($appRow,18) = $appliedTo.name
                 $appRow++
             }
             $row = ($srcRow,$dstRow,$svcRow,$appRow | Measure-Object -Maximum).Maximum
         }
         $row++
         $sheet.Cells.Item($row,1).Interior.ColorIndex = $titleInteriorColor
-        $range1 = $sheet.Range("a"+$row, "q"+$row)
+        $range1 = $sheet.Range("a"+$row, "s"+$row)
         $range1.merge() | Out-Null
         $row++
 

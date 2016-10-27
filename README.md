@@ -46,6 +46,12 @@ Once the script has finished running, remember to save your Excel Workbook to a 
 
 ### Release Notes
 
+Version 0.3
+
+Release Date: 28/10/2016
+
+* Object-ID for destination and source fields added to Layer 3 Firewall worksheet
+
 Version 0.2 
 
 Release Date: 21/10/2016
