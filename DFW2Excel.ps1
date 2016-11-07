@@ -47,6 +47,13 @@ import-module PowerNSX
     $valueNotDefined = "<NOT DEFINED>"
 
 ########################################################
+#    Global Parameters
+########################################################
+
+        $service_links = @{}
+        $nsx_mgr = "192.168.200.11"
+
+########################################################
 #    Define Excel Workbook and calls to different WS
 ########################################################
 function startExcel(){
@@ -57,14 +64,14 @@ function startExcel(){
     $wb = $Excel.Workbooks.Add()
 
     $ws1 = $wb.WorkSheets.Add()
-    $ws1.Name = "Service Groups"
-    service_groups_ws($ws1)
+    $ws1.Name = "Services"
+    services_ws($ws1)
     $usedRange = $ws1.UsedRange
     $usedRange.EntireColumn.Autofit()
 
     $ws2 = $wb.WorkSheets.Add()
-    $ws2.Name = "Services"
-    services_ws($ws2)
+    $ws2.Name = "Service Groups"
+    service_groups_ws($ws2)
     $usedRange = $ws2.UsedRange
     $usedRange.EntireColumn.Autofit()
 
@@ -514,6 +521,7 @@ function pop_services_ws($sheet){
     foreach ($svc in $services) {
 
         $sheet.Cells.Item($row,1) = $svc.name
+        $service_links.Add($svc.name, $row)
         $sheet.Cells.Item($row,2) = $svc.type.typeName
         $sheet.Cells.Item($row,3) = $svc.element.applicationProtocol
         $sheet.Cells.Item($row,4) = $svc.element.value
@@ -669,8 +677,8 @@ function pop_ex_list_ws($sheet){
 ########################################################
 
 # Ask from user
-$nsx_mgr = Read-Host "IP or FQDN of NSX Manager? "
-Connect-NSXServer $nsx_mgr
+# $nsx_mgr = Read-Host "IP or FQDN of NSX Manager? "
+Connect-NSXServer $nsx_mgr -Credential admin
 
 $version = Get-NsxManagerSystemSummary
 $major_version = $version.versionInfo.majorVersion
