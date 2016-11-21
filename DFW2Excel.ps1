@@ -51,7 +51,7 @@ import-module PowerNSX
 ########################################################
 
         $service_links = @{}
-        $nsx_mgr = "192.168.200.11"
+        # $nsx_mgr = "192.168.200.11"
 
 ########################################################
 #    Define Excel Workbook and calls to different WS
@@ -677,7 +677,7 @@ function pop_ex_list_ws($sheet){
 ########################################################
 
 # Ask from user
-# $nsx_mgr = Read-Host "IP or FQDN of NSX Manager? "
+$nsx_mgr = Read-Host "IP or FQDN of NSX Manager? "
 Connect-NSXServer $nsx_mgr -Credential admin
 
 $version = Get-NsxManagerSystemSummary
