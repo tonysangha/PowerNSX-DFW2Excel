@@ -63,6 +63,12 @@ function startExcel(){
     $Excel.DisplayAlerts = $false
     $wb = $Excel.Workbooks.Add()
 
+    $ws0 = $wb.WorkSheets.Add()
+    $ws0.Name = "VM_Addressing"
+    # vm_ip_addresses($ws0)
+    $usedRange = $ws0.UsedRange
+    $usedRange.EntireColumn.Autofit()
+
     $ws1 = $wb.WorkSheets.Add()
     $ws1.Name = "Services"
     services_ws($ws1)
