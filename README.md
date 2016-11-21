@@ -46,6 +46,8 @@ Once the script has finished running, remember to save your Excel Workbook to a 
 
 ### Release Notes
 
+Version 0.4
+
 Version 0.3
 
 Release Date: **28/10/2016**
