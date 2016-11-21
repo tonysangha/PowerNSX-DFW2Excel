@@ -1,6 +1,6 @@
 # Author:   Tony Sangha
 # Blog:    tonysangha.com
-# Version:  0.3
+# Version:  0.4
 # PowerCLI v6.0
 # PowerNSX v2.0
 
@@ -65,7 +65,7 @@ function startExcel(){
 
     $ws0 = $wb.WorkSheets.Add()
     $ws0.Name = "VM_Addressing"
-    # vm_ip_addresses($ws0)
+    vm_ip_addresses_ws($ws0)
     $usedRange = $ws0.UsedRange
     $usedRange.EntireColumn.Autofit()
 
@@ -676,6 +676,41 @@ function pop_ex_list_ws($sheet){
     foreach ($vm in $guests) {
         $sheet.Cells.Item($row,1) = $vm.name
 		$row++ # Increment Rows
+    }
+}
+########################################################
+#    VM Addressing
+########################################################
+
+function vm_ip_addresses_ws($sheet){
+
+    $sheet.Cells.Item(1,1) = "Virtual Machine Addressing"
+    $sheet.Cells.Item(1,1).Font.Size = $titleFontSize
+    $sheet.Cells.Item(1,1).Font.Bold = $titleFontBold
+    $sheet.Cells.Item(1,1).Font.ColorIndex = $titleFontColorIndex
+    $sheet.Cells.Item(1,1).Font.Name = $titleFontName
+    $sheet.Cells.Item(1,1).Interior.ColorIndex = $titleInteriorColor
+    $range1 = $sheet.Range("a1", "f1")
+    $range1.merge() | Out-Null
+
+    $sheet.Cells.Item(2,1) = "VM Name"
+    $sheet.Cells.Item(2,2) = "Guest IP Address"
+    $range2 = $sheet.Range("a2", "B2")
+    $range2.Font.Bold = $subTitleFontBold
+    $range2.Interior.ColorIndex = $subTitleInteriorColor
+    $range2.Font.Name = $subTitleFontName
+    pop_ip_address_ws($sheet)
+}
+
+function pop_ip_address_ws($sheet){
+
+    $row=3
+    $guests = Get-VM | Select Name, @{N="IP";E={@($_.guest.IPAddress[0])}}
+
+    foreach ($vm in $guests) {
+        $sheet.Cells.Item($row,1) = $vm.name
+        $sheet.Cells.Item($row,2) = $vm.ip
+        $row++ # Increment Rows
     }
 }
 ########################################################
