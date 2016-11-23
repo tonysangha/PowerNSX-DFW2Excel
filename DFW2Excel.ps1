@@ -116,8 +116,6 @@ function startExcel(){
     dfw_ws($ws8)
     $usedRange = $ws8.UsedRange
     $usedRange.EntireColumn.Autofit()
-	
-	
 
 }
 
@@ -679,7 +677,7 @@ function pop_ex_list_ws($sheet){
     }
 }
 ########################################################
-#    VM Addressing
+#    VM Addressing - First NIC IP Address
 ########################################################
 
 function vm_ip_addresses_ws($sheet){
@@ -734,6 +732,3 @@ else{
 
 		Write-Warning "NSX Manager version is not in the NSX 6.2.x release train"
 }
-
-
-
