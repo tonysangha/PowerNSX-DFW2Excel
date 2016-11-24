@@ -48,6 +48,12 @@ Once the script has finished running, remember to save your Excel Workbook to a 
 
 Version 0.4
 
+Release Date: **24/11/2016**
+
+* Document VM IP Addresses into worksheet
+* Document static membership of VMs in Security Groups
+* Add warning text and simple error checks to start script
+
 Version 0.3
 
 Release Date: **28/10/2016**

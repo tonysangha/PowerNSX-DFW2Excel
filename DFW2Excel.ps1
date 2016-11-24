@@ -51,7 +51,6 @@ import-module PowerNSX
 ########################################################
 
         $service_links = @{}
-        # $nsx_mgr = "192.168.200.11"
 
 ########################################################
 #    Define Excel Workbook and calls to different WS
@@ -63,60 +62,72 @@ function startExcel(){
     $Excel.DisplayAlerts = $false
     $wb = $Excel.Workbooks.Add()
 
-    $ws0 = $wb.WorkSheets.Add()
-    $ws0.Name = "VM_Addressing"
-    vm_ip_addresses_ws($ws0)
-    $usedRange = $ws0.UsedRange
-    $usedRange.EntireColumn.Autofit()
+    if ($args[0] -eq "y"){
 
+        Write-Host "`nRetrieving IP Addresses for ALL Virtual Machines in vCenter environment." -foregroundcolor "magenta"
+        Write-Host "*** This may take a while ***." -foregroundcolor "Yellow"
+        $ws0 = $wb.WorkSheets.Add()
+        $ws0.Name = "VM_Addressing"
+        vm_ip_addresses_ws($ws0)
+        $usedRange = $ws0.UsedRange
+        $usedRange.EntireColumn.Autofit()
+    }
+
+    Write-Host "`nRetrieving Services configured in NSX-v." -foregroundcolor "magenta"
     $ws1 = $wb.WorkSheets.Add()
     $ws1.Name = "Services"
     services_ws($ws1)
     $usedRange = $ws1.UsedRange
     $usedRange.EntireColumn.Autofit()
 
+    Write-Host "`nRetrieving Service Groups configured in NSX-v." -foregroundcolor "magenta"
     $ws2 = $wb.WorkSheets.Add()
     $ws2.Name = "Service Groups"
     service_groups_ws($ws2)
     $usedRange = $ws2.UsedRange
     $usedRange.EntireColumn.Autofit()
 
+    Write-Host "`nRetrieving MACSETS configured in NSX-v." -foregroundcolor "magenta"
     $ws3 = $wb.WorkSheets.Add()
     $ws3.Name = "MACSETS"
     macset_ws($ws3)
     $usedRange = $ws3.UsedRange
     $usedRange.EntireColumn.Autofit()
 
+    Write-Host "`nRetrieving IPSETS configured in NSX-v." -foregroundcolor "magenta"
     $ws4 = $wb.WorkSheets.Add()
     $ws4.Name = "IPSETS"
     ipset_ws($ws4)
     $usedRange = $ws4.UsedRange
     $usedRange.EntireColumn.Autofit()
 
+    Write-Host "`nRetrieving Security Groups configured in NSX-v." -foregroundcolor "magenta"
     $ws5 = $wb.WorkSheets.Add()
     $ws5.Name = "Security Groups"
     sg_ws($ws5)
     $usedRange = $ws5.UsedRange
     $usedRange.EntireColumn.Autofit()
 
+    Write-Host "`nRetrieving Security Tags configured in NSX-v." -foregroundcolor "magenta"
     $ws6 = $wb.Worksheets.Add()
     $ws6.Name = "Security Tags"
     sec_tags_ws($ws6)
     $usedRange = $ws6.UsedRange
     $usedRange.EntireColumn.Autofit()
 	
+    Write-Host "`nRetrieving VMs in DFW Exclusion List" -foregroundcolor "magenta"
 	$ws7 = $wb.Worksheets.Add()
     $ws7.Name = "DFW Exclusion list"
     ex_list_ws($ws7)
     $usedRange = $ws7.UsedRange
     $usedRange.EntireColumn.Autofit()
-	
+
+    Write-Host "`nRetrieving DFW Layer 3 FW Rules" -foregroundcolor "magenta"
 	$ws8 = $wb.Worksheets.Add()
     $ws8.Name = "Layer 3 Firewall"
     dfw_ws($ws8)
     $usedRange = $ws8.UsedRange
     $usedRange.EntireColumn.Autofit()
-
 }
 
 ########################################################
@@ -305,7 +316,7 @@ function l3_rules($sheet){
 }
 
 ########################################################
-#    Security Groups - Dynamic Membership only
+#    Security Groups
 ########################################################
 
 function sg_ws($sheet){
@@ -715,8 +726,18 @@ function pop_ip_address_ws($sheet){
 #    Global Functions
 ########################################################
 
+function user_input_vm_ips(){
+
+    # Ask user if they want to collect VM IP Addresses
+    Write-Host "`nCollection of IP Addresses is time consuming and depending on the size of the environment, it may take a while to `
+complete. It is therefore recommended to only enable collection of IP Addresses for small vCenter environments `
+with few VM's" -foregroundcolor "yellow"
+    $collect_vm_ips = Read-Host "`nWould you like to continue collection of VM IP Addresses (Default: N) Y/N?: "
+    return $collect_vm_ips
+}
+
 # Ask from user
-$nsx_mgr = Read-Host "IP or FQDN of NSX Manager? "
+$nsx_mgr = Read-Host "`nIP or FQDN of NSX Manager? "
 Connect-NSXServer $nsx_mgr -Credential admin
 
 $version = Get-NsxManagerSystemSummary
@@ -726,9 +747,18 @@ $minor_version = $version.versionInfo.minorVersion
 # Only tested to run on NSX 6.2.x installations
 
 if($major_version -eq 6 -And $minor_version -eq 2){
-	startExcel
+
+    $collect_vm_ips = user_input_vm_ips
+
+    if ($collect_vm_ips -eq "y") {
+        Write-Host "Collection of IP Addresses Enabled"
+        startExcel("y")
+    }
+    else{
+        Write-Warning "Collection of IP Addresses Disabled"
+        startExcel("n")
+    }
 }
 else{
-
-		Write-Warning "NSX Manager version is not in the NSX 6.2.x release train"
+		Write-Warning "`nNSX Manager version is not in the NSX 6.2.x release train"
 }
