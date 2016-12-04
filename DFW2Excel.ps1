@@ -114,7 +114,7 @@ function startExcel(){
     sec_tags_ws($ws6)
     $usedRange = $ws6.UsedRange
     $usedRange.EntireColumn.Autofit()
-	
+
     Write-Host "`nRetrieving VMs in DFW Exclusion List" -foregroundcolor "magenta"
 	$ws7 = $wb.Worksheets.Add()
     $ws7.Name = "DFW Exclusion list"
@@ -238,7 +238,7 @@ function l3_rules($sheet){
 					$sheet.Cells.Item($srcRow,6) = "NEGATE"
 					$sheet.Cells.Item($row,6).Font.ColorIndex = 3
 				}
-				
+
                 foreach($source in $rule.sources.source){
                     $sheet.Cells.Item($srcRow,7) = $source.type
 
@@ -262,13 +262,13 @@ function l3_rules($sheet){
                 $sheet.Cells.Item($dstRow,13) = "ANY"
                 $sheet.Cells.Item($dstRow,13).Font.ColorIndex = 45
             } else {
-			
+
 				#If Negated field exists, document
 				if ($rule.destinations.excluded -eq "True" ){
 					$sheet.Cells.Item($srcRow,10) = "NEGATE"
 					$sheet.Cells.Item($row,10).Font.ColorIndex = 3
 				}
-				
+
                 foreach($destination in $rule.destinations.destination){
                     $sheet.Cells.Item($dstRow,11) = $destination.type
                     if($destination.type -eq "Ipv4Address"){
@@ -358,9 +358,9 @@ function pop_sg_ws($sheet){
             $sheet.Cells.Item($row,2) = $member.scope.name
             $sheet.Cells.Item($row,3) = $member.isUniversal
             $sheet.Cells.Item($row,4) = $member.inhertianceAllowed
-            
+
             $sheet.Cells.Item($row,5) = "Dynamic"
-            
+
             foreach ($entity in $member.dynamicMemberDefinition.dynamicSet.dynamicCriteria){
                 $sheet.Cells.Item($row,6) = $entity.key
                 $sheet.Cells.Item($row,7) = $entity.operator
@@ -374,12 +374,12 @@ function pop_sg_ws($sheet){
             $sheet.Cells.Item($row,2) = $member.scope.name
             $sheet.Cells.Item($row,3) = $member.isUniversal
             $sheet.Cells.Item($row,4) = $member.inhertianceAllowed
-            
+
             $sheet.Cells.Item($row,5) = "Static"
             $row++
         }
     }
-    
+
     $sheet.Cells.Item($row,1) = "Security Group Membership"
     $sheet.Cells.Item($row,1).Font.Size = $titleFontSize
     $sheet.Cells.Item($row,1).Font.Bold = $titleFontBold
@@ -390,7 +390,7 @@ function pop_sg_ws($sheet){
     $range2.merge() | Out-Null
 
     $row++
-    
+
     $sheet.Cells.Item($row,1) = "SG Name"
     $sheet.Cells.Item($row,2) = "VM ID"
     $sheet.Cells.Item($row,3) = "VM Name"
@@ -398,7 +398,7 @@ function pop_sg_ws($sheet){
     $range3.Font.Bold = $subTitleFontBold
     $range3.Interior.ColorIndex = $subTitleInteriorColor
     $range3.Font.Name = $subTitleFontName
-    
+
     $row++
 
     foreach ($member in $sg){
@@ -632,22 +632,22 @@ function pop_sec_tags_ws($sheet){
 		$sheet.Cells.Item($row,4) = $tag.systemResource
 		$row++ # Increment Rows
     }
-	
+
 	$sheet.Cells.Item($row,1) = "Security Tag Name"
     $sheet.Cells.Item($row,2) = "VM Name"
 	$range3 = $sheet.Range("a"+$row, "b"+$row)
 	$range3.Font.Bold = $subTitleFontBold
     $range3.Interior.ColorIndex = $subTitleInteriorColor
     $range3.Font.Name = $subTitleFontName
-	
+
 	$row ++
-	
+
 	# Retrieve a list of all Tag Assignments
 	$tag_assign = $ST | Get-NsxSecurityTagAssignment
-	
+
 	# Traverse VM membership and populate spreadsheet
 	foreach ($mem in $tag_assign){
-		
+
 		$sheet.Cells.Item($row,1) = $mem.SecurityTag.name
         $sheet.Cells.Item($row,2) = $mem.VirtualMachine.name
 		$row++
