@@ -539,6 +539,7 @@ function pop_services_ws($sheet){
         $service_links.Add($svc.name, $row)
         $sheet.Cells.Item($row,2) = $svc.type.typeName
         $sheet.Cells.Item($row,3) = $svc.element.applicationProtocol
+        $sheet.Cells.Item($row,4).NumberFormat = "@"
         $sheet.Cells.Item($row,4) = $svc.element.value
         $sheet.Cells.Item($row,5) = $svc.isUniversal
 

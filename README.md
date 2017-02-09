@@ -46,6 +46,12 @@ Once the script has finished running, remember to save your Excel Workbook to a 
 
 ### Release Notes
 
+Version 0.5
+
+Release Date: **09/02/2017**
+
+* Fixed issue #7 - Needed to format value as text of cell
+
 Version 0.4
 
 Release Date: **24/11/2016**
