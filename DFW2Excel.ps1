@@ -1,6 +1,6 @@
 # Author:   Tony Sangha
 # Blog:    tonysangha.com
-# Version:  0.4
+# Version:  0.5
 # PowerCLI v6.0
 # PowerNSX v2.0
 
