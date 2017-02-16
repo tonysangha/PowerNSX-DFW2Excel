@@ -1,8 +1,3 @@
-# PowerNSX-Scripts
-Powershell scripts using the PowerNSX Module for VMware vSphere NSX
-
-Please submit any issues encountered via the Issues page on this repository
-
 # Document NSX-v DFW with PowerNSX
 
 This script connects to NSX Manager and vCenter using the appropriate methods, 

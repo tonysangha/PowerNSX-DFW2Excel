@@ -3,6 +3,7 @@
 # Version:  0.5
 # PowerCLI v6.0
 # PowerNSX v2.0
+# Purpose: Document NSX for vSphere Distributed Firewall
 
 # Import PowerCLI modules, PowerCLI must be installed
 if ( !(Get-Module -Name VMware.VimAutomation.Core -ErrorAction SilentlyContinue) ) {
