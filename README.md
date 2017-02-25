@@ -1,9 +1,9 @@
 # Document NSX-v DFW with PowerNSX
 
-This script connects to NSX Manager and vCenter using the appropriate methods, 
+Script connects to NSX Manager and vCenter using the Powershell/Powercli 
 to download and create an MS Excel spreadsheet with your firewall configurations.
 
-** Currently only works for Layer 3 DFW Policy
+** Only works for Layer 3 DFW Policy
 
 Pre-requisites to run the script are:
 
@@ -12,7 +12,6 @@ Pre-requisites to run the script are:
 * [Microsoft Excel](https://products.office.com/en-au/excel) installed on the local system
 * Access to NSX Manager API with privileges
 * Access to vSphere Web Client and Privileges (Read)
-* Only currently tested on version 6.2.x of NSX
 
 To run the script, make sure your Powershell Execution is set to *remotesigned*
 
