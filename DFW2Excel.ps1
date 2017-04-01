@@ -1,6 +1,6 @@
 # Author:   Tony Sangha
 # Blog:    tonysangha.com
-# Version:  0.5
+# Version:  0.7
 # PowerCLI v6.0
 # PowerNSX v2.0
 # Purpose: Document NSX for vSphere Distributed Firewall
@@ -748,7 +748,7 @@ $minor_version = $version.versionInfo.minorVersion
 
 # Only tested to run on NSX 6.2.x installations
 
-if($major_version -eq 6 -And $minor_version -eq 2){
+if($major_version -eq 6){
 
     $collect_vm_ips = user_input_vm_ips
 
@@ -762,5 +762,5 @@ if($major_version -eq 6 -And $minor_version -eq 2){
     }
 }
 else{
-		Write-Warning "`nNSX Manager version is not in the NSX 6.2.x release train"
+		Write-Warning "`nNSX Manager version is not in the NSX 6.x release train"
 }
