@@ -40,6 +40,13 @@ Once the script has finished running, remember to save your Excel Workbook to a 
 
 ### Release Notes
 
+Version 0.6/0.7
+
+Release Date: **1/04/2017**
+
+* Remove Minor version check of NSX Manager
+* remove hard-coded string `admin` from credentials request
+
 Version 0.5
 
 Release Date: **09/02/2017**
