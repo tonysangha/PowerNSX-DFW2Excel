@@ -740,7 +740,7 @@ with few VM's" -foregroundcolor "yellow"
 
 # Ask from user
 $nsx_mgr = Read-Host "`nIP or FQDN of NSX Manager? "
-Connect-NSXServer $nsx_mgr -Credential admin
+Connect-NSXServer $nsx_mgr
 
 $version = Get-NsxManagerSystemSummary
 $major_version = $version.versionInfo.majorVersion
