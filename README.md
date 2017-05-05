@@ -40,6 +40,14 @@ Once the script has finished running, remember to save your Excel Workbook to a 
 
 ### Release Notes
 
+Version 0.6
+
+Release Date: **06/05/2017**
+
+* Resolved Issue 12 - _Error with $svc.name DFW2Excel.ps1:540 char:9_
+* PowerNSX enhancements to universal object handling incorporated into script
+* Changed VM IP Address lookup to use Extension Data from `get-vm` cmdlet
+
 Version 0.6/0.7
 
 Release Date: **1/04/2017**

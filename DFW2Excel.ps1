@@ -1,6 +1,6 @@
 # Author:   Tony Sangha
 # Blog:    tonysangha.com
-# Version:  0.7
+# Version:  0.8
 # PowerCLI v6.0
 # PowerNSX v2.0
 # Purpose: Document NSX for vSphere Distributed Firewall
@@ -689,7 +689,7 @@ function sec_tags_ws($sheet){
     $sheet.Cells.Item(2,1) = "Security Tag Name"
     $sheet.Cells.Item(2,2) = "Built-In"
     $sheet.Cells.Item(2,3) = "VM Members"
-    $sheet.Cells.Item(2,4) = "Description"
+    $sheet.Cells.Item(2,4) = "Is Universal"
     $range2 = $sheet.Range("a2", "d2")
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
@@ -706,7 +706,7 @@ function pop_sec_tags_ws($sheet){
         $sheet.Cells.Item($row,1) = $tag.name
         $sheet.Cells.Item($row,2) = $tag.systemResource
         $sheet.Cells.Item($row,3) = $tag.vmCount
-		$sheet.Cells.Item($row,4) = $tag.systemResource
+		$sheet.Cells.Item($row,4) = $tag.isUniversal
 		$row++ # Increment Rows
     }
 
@@ -806,10 +806,9 @@ function pop_ip_address_ws($sheet){
 function user_input_vm_ips(){
 
     # Ask user if they want to collect VM IP Addresses
-    Write-Host "`nCollection of IP Addresses is time consuming and depending on the size of the environment, it may take a while to `
-complete. It is therefore recommended to only enable collection of IP Addresses for small vCenter environments `
-with few VM's" -foregroundcolor "yellow"
-    $collect_vm_ips = Read-Host "`nWould you like to continue collection of VM IP Addresses (Default: N) Y/N?: "
+    Write-Host "`nCollection of VM IP Addresses has changed to use the value that is reported to VMware Tools, therefore
+                    VM Tools must be installed and running on VMs" -foregroundcolor "yellow"
+    $collect_vm_ips = Read-Host "`nWould you like to continue collection of VM IP Addresses (Default: N) Y/N?"
     return $collect_vm_ips
 }
 
