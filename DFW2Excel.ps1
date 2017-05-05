@@ -619,6 +619,25 @@ function pop_service_groups_ws($sheet){
             }
         }
     }
+
+    $SGU = Get-NSXServiceGroup -scopeID 'universalroot-0'
+
+    foreach ($svc_mem in $SGU) {
+        $sheet.Cells.Item($row,1) = $svc_mem.name
+        $sheet.Cells.Item($row,1).Font.Bold = $true
+        $sheet.Cells.Item($row,2) = $svc_mem.isUniversal
+        $sheet.Cells.Item($row,3) = $svc_mem.scope.name
+
+        if (!$svc_mem.member) {
+                $row++ # Increment Rows
+            }
+        else {
+            foreach ($member in $svc_mem.member){
+            $sheet.Cells.Item($row,4) = $member.name
+            $row++ # Increment Rows
+            }
+        }
+    }
 }
 ########################################################
 #    Security Tag Worksheet
