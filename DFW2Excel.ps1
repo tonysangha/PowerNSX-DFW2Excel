@@ -458,6 +458,19 @@ function pop_ipset_ws($sheet){
 
         $row++ # Increment Rows
     }
+    $ipset = get-nsxipset -scopeID 'universalroot-0'
+    foreach ($ip in $ipset) {
+
+        $sheet.Cells.Item($row,1) = $ip.name
+        $sheet.Cells.Item($row,2) = $ip.value
+        $sheet.Cells.Item($row,3) = $ip.isUniversal
+        if(!$ip.description){
+            $sheet.Cells.Item($row,4) = $valueNotDefined
+        }
+        else {$sheet.Cells.Item($row,4) = $ip.description}
+
+        $row++ # Increment Rows
+    }
 }
 ########################################################
 #    MACSETS Worksheet
