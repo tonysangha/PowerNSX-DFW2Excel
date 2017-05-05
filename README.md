@@ -40,7 +40,7 @@ Once the script has finished running, remember to save your Excel Workbook to a 
 
 ### Release Notes
 
-Version 0.6
+Version 0.8
 
 Release Date: **06/05/2017**
 
