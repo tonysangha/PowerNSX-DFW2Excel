@@ -51,7 +51,9 @@ import-module PowerNSX
 #    Global Parameters
 ########################################################
 
-
+New-VIProperty -Name VMIPAddress -ObjectType VirtualMachine `
+    -ValueFromExtensionProperty 'Summary.Guest.IPAddress' `
+    -Force
 
 ########################################################
 #    Define Excel Workbook and calls to different WS
@@ -759,11 +761,11 @@ function vm_ip_addresses_ws($sheet){
 function pop_ip_address_ws($sheet){
 
     $row=3
-    $guests = Get-VM | Select Name, @{N="IP";E={@($_.guest.IPAddress[0])}}
+    $guests = Get-VM | Select Name, VMIPAddress
 
     foreach ($vm in $guests) {
         $sheet.Cells.Item($row,1) = $vm.name
-        $sheet.Cells.Item($row,2) = $vm.ip
+        $sheet.Cells.Item($row,2) = $vm.VMIPAddress
         $row++ # Increment Rows
     }
 }
