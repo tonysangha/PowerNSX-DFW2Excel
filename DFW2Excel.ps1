@@ -51,7 +51,7 @@ import-module PowerNSX
 #    Global Parameters
 ########################################################
 
-        $service_links = @{}
+
 
 ########################################################
 #    Define Excel Workbook and calls to different WS
@@ -458,8 +458,8 @@ function pop_ipset_ws($sheet){
 
         $row++ # Increment Rows
     }
-    $ipset = get-nsxipset -scopeID 'universalroot-0'
-    foreach ($ip in $ipset) {
+    $ipset_unv = get-nsxipset -scopeID 'universalroot-0'
+    foreach ($ip in $ipset_unv) {
 
         $sheet.Cells.Item($row,1) = $ip.name
         $sheet.Cells.Item($row,2) = $ip.value
@@ -550,7 +550,18 @@ function pop_services_ws($sheet){
     foreach ($svc in $services) {
 
         $sheet.Cells.Item($row,1) = $svc.name
-        $service_links.Add($svc.name, $row)
+        $sheet.Cells.Item($row,2) = $svc.type.typeName
+        $sheet.Cells.Item($row,3) = $svc.element.applicationProtocol
+        $sheet.Cells.Item($row,4).NumberFormat = "@"
+        $sheet.Cells.Item($row,4) = $svc.element.value
+        $sheet.Cells.Item($row,5) = $svc.isUniversal
+
+        $row++ # Increment Rows
+    }
+    $services_unv = get-nsxservice -scopeID 'universalroot-0'
+    foreach ($svc in $services_unv) {
+
+        $sheet.Cells.Item($row,1) = $svc.name
         $sheet.Cells.Item($row,2) = $svc.type.typeName
         $sheet.Cells.Item($row,3) = $svc.element.applicationProtocol
         $sheet.Cells.Item($row,4).NumberFormat = "@"
