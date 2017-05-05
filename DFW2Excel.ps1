@@ -351,9 +351,39 @@ function sg_ws($sheet){
 
 function pop_sg_ws($sheet){
 
-    $sg = Get-NSXSecurityGroup
     $row = 3
+    $sg = Get-NSXSecurityGroup
     foreach ($member in $sg){
+
+        if($member.dynamicMemberDefinition){
+
+            $sheet.Cells.Item($row,1) = $member.name
+            $sheet.Cells.Item($row,2) = $member.scope.name
+            $sheet.Cells.Item($row,3) = $member.isUniversal
+            $sheet.Cells.Item($row,4) = $member.inhertianceAllowed
+
+            $sheet.Cells.Item($row,5) = "Dynamic"
+
+            foreach ($entity in $member.dynamicMemberDefinition.dynamicSet.dynamicCriteria){
+                $sheet.Cells.Item($row,6) = $entity.key
+                $sheet.Cells.Item($row,7) = $entity.operator
+                $sheet.Cells.Item($row,8) = $entity.criteria
+                $sheet.Cells.Item($row,9) = $entity.value
+                $row++
+            }
+        }
+        else{
+            $sheet.Cells.Item($row,1) = $member.name
+            $sheet.Cells.Item($row,2) = $member.scope.name
+            $sheet.Cells.Item($row,3) = $member.isUniversal
+            $sheet.Cells.Item($row,4) = $member.inhertianceAllowed
+
+            $sheet.Cells.Item($row,5) = "Static"
+            $row++
+        }
+    }
+    $sgu = Get-NSXSecurityGroup -scopeID 'universalroot-0'
+    foreach ($member in $sgu){
 
         if($member.dynamicMemberDefinition){
 
