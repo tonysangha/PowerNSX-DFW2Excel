@@ -44,6 +44,7 @@ Version 0.9.1
 
 Release Date: **10/06/2017**
 
+* New Column - object-ids added to service and service group tabs.
 * Instead of using service names, using object-id's instead for hashtable to build hyperlink
 * For Service Group Hyperlinks, provide tooltip which is object-id
 * Hyperlink from Exclusion List VMs & Sec Grp VMs to VM_Info sheet
