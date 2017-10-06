@@ -1,6 +1,6 @@
 # Author:   Tony Sangha
 # Blog:    tonysangha.com
-# Version:  0.8
+# Version:  0.9
 # PowerCLI v6.0
 # PowerNSX v2.0
 # Purpose: Document NSX for vSphere Distributed Firewall
@@ -23,9 +23,12 @@ if ( !(Get-Module -Name VMware.VimAutomation.Core -ErrorAction SilentlyContinue)
 # Import PowerNSX Module
 import-module PowerNSX
 
+# Empty Hash-tables for use with Hyperlinks
+$services_uni_ht = @{}
+$services_lcl_ht = @{}
 
 ########################################################
-#    Formatting Options for Excel Spreadsheet
+#  Formatting/Functions Options for Excel Spreadsheet
 ########################################################
 
     $titleFontSize = 18
@@ -119,14 +122,14 @@ function startExcel(){
     $usedRange.EntireColumn.Autofit()
 
     Write-Host "`nRetrieving VMs in DFW Exclusion List" -foregroundcolor "magenta"
-	$ws7 = $wb.Worksheets.Add()
+    $ws7 = $wb.Worksheets.Add()
     $ws7.Name = "DFW Exclusion list"
     ex_list_ws($ws7)
     $usedRange = $ws7.UsedRange
     $usedRange.EntireColumn.Autofit()
 
     Write-Host "`nRetrieving DFW Layer 3 FW Rules" -foregroundcolor "magenta"
-	$ws8 = $wb.Worksheets.Add()
+    $ws8 = $wb.Worksheets.Add()
     $ws8.Name = "Layer 3 Firewall"
     dfw_ws($ws8)
     $usedRange = $ws8.UsedRange
@@ -170,12 +173,12 @@ function l3_rules($sheet){
     $sheet.Cells.Item(3,6) = "Source Excluded (Negated)"
     $sheet.Cells.Item(3,7) = "Source Type"
     $sheet.Cells.Item(3,8) = "Source Name"
-	$sheet.Cells.Item(3,9) = "Source Object ID"
+    $sheet.Cells.Item(3,9) = "Source Object ID"
 
     $sheet.Cells.Item(3,10) = "Destination Excluded (Negated)"
     $sheet.Cells.Item(3,11) = "Destination Type"
     $sheet.Cells.Item(3,12) = "Destination Name"
-	$sheet.Cells.Item(3,13) = "Destination Object ID"
+    $sheet.Cells.Item(3,13) = "Destination Object ID"
 
     $sheet.Cells.Item(3,14) = "Service Name"
     $sheet.Cells.Item(3,15) = "Action"
@@ -236,11 +239,11 @@ function l3_rules($sheet){
                 $sheet.Cells.Item($srcRow,8) = "ANY"
                 $sheet.Cells.Item($srcRow,8).Font.ColorIndex = 45
             } else {
-				#If Negated field exists, document
-				if ($rule.sources.excluded -eq "True" ){
-					$sheet.Cells.Item($srcRow,6) = "NEGATE"
-					$sheet.Cells.Item($row,6).Font.ColorIndex = 3
-				}
+                #If Negated field exists, document
+                if ($rule.sources.excluded -eq "True" ){
+                    $sheet.Cells.Item($srcRow,6) = "NEGATE"
+                    $sheet.Cells.Item($row,6).Font.ColorIndex = 3
+                }
 
                 foreach($source in $rule.sources.source){
                     $sheet.Cells.Item($srcRow,7) = $source.type
@@ -251,7 +254,7 @@ function l3_rules($sheet){
                         $sheet.Cells.Item($srcRow,8) = $source.value
                     } else {
                         $sheet.Cells.Item($srcRow,8) = $source.name
-						$sheet.Cells.Item($srcRow,9) = $source.value
+                        $sheet.Cells.Item($srcRow,9) = $source.value
                     }
                 $srcRow++
                 }
@@ -266,11 +269,11 @@ function l3_rules($sheet){
                 $sheet.Cells.Item($dstRow,13).Font.ColorIndex = 45
             } else {
 
-				#If Negated field exists, document
-				if ($rule.destinations.excluded -eq "True" ){
-					$sheet.Cells.Item($srcRow,10) = "NEGATE"
-					$sheet.Cells.Item($row,10).Font.ColorIndex = 3
-				}
+                #If Negated field exists, document
+                if ($rule.destinations.excluded -eq "True" ){
+                    $sheet.Cells.Item($srcRow,10) = "NEGATE"
+                    $sheet.Cells.Item($row,10).Font.ColorIndex = 3
+                }
 
                 foreach($destination in $rule.destinations.destination){
                     $sheet.Cells.Item($dstRow,11) = $destination.type
@@ -280,7 +283,7 @@ function l3_rules($sheet){
                             $sheet.Cells.Item($dstRow,12) = $destination.value
                         } else {
                             $sheet.Cells.Item($dstRow,12) = $destination.name
-							$sheet.Cells.Item($dstRow,13) = $destination.value
+                            $sheet.Cells.Item($dstRow,13) = $destination.value
                         }
                     $dstRow++
                 }
@@ -352,7 +355,7 @@ function sg_ws($sheet){
 function pop_sg_ws($sheet){
 
     $row = 3
-    $sg = Get-NSXSecurityGroup
+    $sg = Get-NSXSecurityGroup -scopeID 'globalroot-0'
     foreach ($member in $sg){
 
         if($member.dynamicMemberDefinition){
@@ -477,7 +480,7 @@ function ipset_ws($sheet){
 function pop_ipset_ws($sheet){
 
     $row=3
-    $ipset = get-nsxipset
+    $ipset = get-nsxipset -scopeID 'globalroot-0'
     foreach ($ip in $ipset) {
 
         $sheet.Cells.Item($row,1) = $ip.name
@@ -576,9 +579,9 @@ function services_ws($sheet){
 
 function pop_services_ws($sheet){
 
-    # Grab MACSets and populate
+    # Grab Services and populate
     $row=3
-    $services = get-nsxservice
+    $services = get-nsxservice -scopeID 'globalroot-0'
     foreach ($svc in $services) {
 
         $sheet.Cells.Item($row,1) = $svc.name
@@ -587,9 +590,21 @@ function pop_services_ws($sheet){
         $sheet.Cells.Item($row,4).NumberFormat = "@"
         $sheet.Cells.Item($row,4) = $svc.element.value
         $sheet.Cells.Item($row,5) = $svc.isUniversal
-
+        try 
+        {
+            $link_ref = "Services!" + ($sheet.Cells.Item($row,1)).address($false,$false)
+            if($services_lcl_ht.ContainsKey($svc.name) -eq $false)
+            {
+                $services_lcl_ht.Add($svc.name, $link_ref)
+            }
+        }
+        catch [Exception]{
+            Write-Warning $svc.name + "already exists, manually create hyperlink reference"
+        }
+      
         $row++ # Increment Rows
     }
+
     $services_unv = get-nsxservice -scopeID 'universalroot-0'
     foreach ($svc in $services_unv) {
 
@@ -599,7 +614,18 @@ function pop_services_ws($sheet){
         $sheet.Cells.Item($row,4).NumberFormat = "@"
         $sheet.Cells.Item($row,4) = $svc.element.value
         $sheet.Cells.Item($row,5) = $svc.isUniversal
-
+        try 
+        {
+            $link_ref = "Services!" + ($sheet.Cells.Item($row,1)).address($false,$false)
+            if($services_uni_ht.ContainsKey($svc.name) -eq $false)
+            {
+                $services_uni_ht.Add($svc.name, $link_ref)
+            }
+        }
+        catch [Exception]{
+            Write-Warning $svc.name + "already exists, manually create hyperlink reference"
+        }
+      
         $row++ # Increment Rows
     }
 }
@@ -633,44 +659,81 @@ function service_groups_ws($sheet){
 function pop_service_groups_ws($sheet){
 
     $row=3
-    $SG = Get-NSXServiceGroup
+    $SG = Get-NSXServiceGroup -scopeID 'globalroot-0'
 
-    foreach ($svc_mem in $SG) {
+    foreach ($svc_mem in $SG) 
+    {
         $sheet.Cells.Item($row,1) = $svc_mem.name
         $sheet.Cells.Item($row,1).Font.Bold = $true
         $sheet.Cells.Item($row,2) = $svc_mem.isUniversal
         $sheet.Cells.Item($row,3) = $svc_mem.scope.name
 
-        if (!$svc_mem.member) {
-                $row++ # Increment Rows
-            }
-        else {
-            foreach ($member in $svc_mem.member){
-            $sheet.Cells.Item($row,4) = $member.name
+        if (!$svc_mem.member)
+        {
             $row++ # Increment Rows
+        }
+        else
+        {
+            foreach ($member in $svc_mem.member)
+            {
+                $result = $services_lcl_ht[$member.name]        
+                if([string]::IsNullOrWhiteSpace($result))
+                {
+                     $sheet.Cells.Item($row,4) = $member.name
+                     $row++ # Increment Rows
+                }
+                else 
+                {
+                    $link = $sheet.Hyperlinks.Add(
+                    $sheet.Cells.Item($row,4),
+                    "",
+                    $result,
+                    "Global (local) Service Definiton",
+                    $member.name)  
+                    $row++ # Increment Rows
+                }
             }
         }
     }
 
     $SGU = Get-NSXServiceGroup -scopeID 'universalroot-0'
 
-    foreach ($svc_mem in $SGU) {
+    foreach ($svc_mem in $SGU) 
+    {
         $sheet.Cells.Item($row,1) = $svc_mem.name
         $sheet.Cells.Item($row,1).Font.Bold = $true
         $sheet.Cells.Item($row,2) = $svc_mem.isUniversal
         $sheet.Cells.Item($row,3) = $svc_mem.scope.name
 
-        if (!$svc_mem.member) {
+        if (!$svc_mem.member) 
+        {
                 $row++ # Increment Rows
-            }
-        else {
-            foreach ($member in $svc_mem.member){
-            $sheet.Cells.Item($row,4) = $member.name
-            $row++ # Increment Rows
+        }
+        else 
+        {
+            foreach ($member in $svc_mem.member)
+            {
+                $result = $services_uni_ht[$member.name]        
+                if([string]::IsNullOrWhiteSpace($result))
+                {
+                     $sheet.Cells.Item($row,4) = $member.name
+                     $row++ # Increment Rows
+                }
+                else 
+                {
+                    $link = $sheet.Hyperlinks.Add(
+                    $sheet.Cells.Item($row,4),
+                    "",
+                    $result,
+                    "Universal Service Definiton",
+                    $member.name)  
+                    $row++ # Increment Rows
+                }
             }
         }
     }
 }
+
 ########################################################
 #    Security Tag Worksheet
 ########################################################
@@ -706,29 +769,29 @@ function pop_sec_tags_ws($sheet){
         $sheet.Cells.Item($row,1) = $tag.name
         $sheet.Cells.Item($row,2) = $tag.systemResource
         $sheet.Cells.Item($row,3) = $tag.vmCount
-		$sheet.Cells.Item($row,4) = $tag.isUniversal
-		$row++ # Increment Rows
+        $sheet.Cells.Item($row,4) = $tag.isUniversal
+        $row++ # Increment Rows
     }
 
-	$sheet.Cells.Item($row,1) = "Security Tag Name"
+    $sheet.Cells.Item($row,1) = "Security Tag Name"
     $sheet.Cells.Item($row,2) = "VM Name"
-	$range3 = $sheet.Range("a"+$row, "b"+$row)
-	$range3.Font.Bold = $subTitleFontBold
+    $range3 = $sheet.Range("a"+$row, "b"+$row)
+    $range3.Font.Bold = $subTitleFontBold
     $range3.Interior.ColorIndex = $subTitleInteriorColor
     $range3.Font.Name = $subTitleFontName
 
-	$row ++
+    $row ++
 
-	# Retrieve a list of all Tag Assignments
-	$tag_assign = $ST | Get-NsxSecurityTagAssignment
+    # Retrieve a list of all Tag Assignments
+    $tag_assign = $ST | Get-NsxSecurityTagAssignment
 
-	# Traverse VM membership and populate spreadsheet
-	foreach ($mem in $tag_assign){
+    # Traverse VM membership and populate spreadsheet
+    foreach ($mem in $tag_assign){
 
-		$sheet.Cells.Item($row,1) = $mem.SecurityTag.name
+        $sheet.Cells.Item($row,1) = $mem.SecurityTag.name
         $sheet.Cells.Item($row,2) = $mem.VirtualMachine.name
-		$row++
-	}
+        $row++
+    }
 
 }
 ########################################################
@@ -761,7 +824,7 @@ function pop_ex_list_ws($sheet){
 
     foreach ($vm in $guests) {
         $sheet.Cells.Item($row,1) = $vm.name
-		$row++ # Increment Rows
+        $row++ # Increment Rows
     }
 }
 ########################################################
@@ -812,9 +875,12 @@ function user_input_vm_ips(){
     return $collect_vm_ips
 }
 
-# Ask from user
-$nsx_mgr = Read-Host "`nIP or FQDN of NSX Manager? "
-Connect-NSXServer $nsx_mgr
+If (-not $DefaultNSXConnection) 
+{
+    Write-Warning "`nConnect to NSX Manager and vCenter Server needs to be establised"
+    $nsx_mgr = Read-Host "`nIP or FQDN of NSX Manager? "
+    Connect-NSXServer -NSXServer $nsx_mgr
+}
 
 $version = Get-NsxManagerSystemSummary
 $major_version = $version.versionInfo.majorVersion
@@ -836,5 +902,5 @@ if($major_version -eq 6){
     }
 }
 else{
-		Write-Warning "`nNSX Manager version is not in the NSX 6.x release train"
+        Write-Warning "`nNSX Manager version is not in the NSX 6.x release train"
 }

@@ -40,6 +40,14 @@ Once the script has finished running, remember to save your Excel Workbook to a 
 
 ### Release Notes
 
+Version 0.9
+
+Release Date: **10/06/2017**
+
+* If `$NSXDefaultConnection` exists, do not prompt for a new NSX Manager connection
+* When retrieving objects, specify scope - do not rely on defaults
+* [New Feature] - Hyperlinks from Service Groups to Services
+
 Version 0.8
 
 Release Date: **06/05/2017**
