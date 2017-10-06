@@ -2,8 +2,11 @@
 # Blog:    tonysangha.com
 # Version:  0.9
 # PowerCLI v6.0
-# PowerNSX v2.0
+# PowerNSX v3.0
 # Purpose: Document NSX for vSphere Distributed Firewall
+
+# Import PowerNSX Module
+import-module PowerNSX
 
 # Import PowerCLI modules, PowerCLI must be installed
 if ( !(Get-Module -Name VMware.VimAutomation.Core -ErrorAction SilentlyContinue) ) {
@@ -20,12 +23,10 @@ if ( !(Get-Module -Name VMware.VimAutomation.Core -ErrorAction SilentlyContinue)
     Exit 99
 }
 
-# Import PowerNSX Module
-import-module PowerNSX
-
 # Empty Hash-tables for use with Hyperlinks
 $services_uni_ht = @{}
 $services_lcl_ht = @{}
+$vmaddressing_ht = @{}
 
 ########################################################
 #  Formatting/Functions Options for Excel Spreadsheet
@@ -73,7 +74,7 @@ function startExcel(){
         Write-Host "`nRetrieving IP Addresses for ALL Virtual Machines in vCenter environment." -foregroundcolor "magenta"
         Write-Host "*** This may take a while ***." -foregroundcolor "Yellow"
         $ws0 = $wb.WorkSheets.Add()
-        $ws0.Name = "VM_Addressing"
+        $ws0.Name = "VM_Info"
         vm_ip_addresses_ws($ws0)
         $usedRange = $ws0.UsedRange
         $usedRange.EntireColumn.Autofit()
@@ -88,7 +89,7 @@ function startExcel(){
 
     Write-Host "`nRetrieving Service Groups configured in NSX-v." -foregroundcolor "magenta"
     $ws2 = $wb.WorkSheets.Add()
-    $ws2.Name = "Service Groups"
+    $ws2.Name = "Service_Groups"
     service_groups_ws($ws2)
     $usedRange = $ws2.UsedRange
     $usedRange.EntireColumn.Autofit()
@@ -109,14 +110,14 @@ function startExcel(){
 
     Write-Host "`nRetrieving Security Groups configured in NSX-v." -foregroundcolor "magenta"
     $ws5 = $wb.WorkSheets.Add()
-    $ws5.Name = "Security Groups"
+    $ws5.Name = "Security_Groups"
     sg_ws($ws5)
     $usedRange = $ws5.UsedRange
     $usedRange.EntireColumn.Autofit()
 
     Write-Host "`nRetrieving Security Tags configured in NSX-v." -foregroundcolor "magenta"
     $ws6 = $wb.Worksheets.Add()
-    $ws6.Name = "Security Tags"
+    $ws6.Name = "Security_Tags"
     sec_tags_ws($ws6)
     $usedRange = $ws6.UsedRange
     $usedRange.EntireColumn.Autofit()
@@ -439,13 +440,30 @@ function pop_sg_ws($sheet){
 
     foreach ($member in $sg){
 
-        $members = $member | Get-NSXSecurityGroupEffectiveMembers
+        $members = $member | Get-NSXSecurityGroupEffectiveMember
 
         $sheet.Cells.Item($row,1) = $member.name
 
-        foreach ($vm in $members.DynamicIncludeVM.vmnode){
+        foreach ($vm in $members.virtualmachine.vmnode)
+        {
             $sheet.Cells.Item($row,2) = $vm.vmID
             $sheet.Cells.Item($row,3) = $vm.vmName
+
+            $result = $vmaddressing_ht[$vm.vmName]        
+            if([string]::IsNullOrWhiteSpace($result))
+            {
+                 $sheet.Cells.Item($row,3) = $vm.vmName
+            }
+            else 
+            {
+                Write-Host $vm.vmName
+                $link = $sheet.Hyperlinks.Add(
+                $sheet.Cells.Item($row,3),
+                "",
+                $result,
+                "Virtual Machine Information",
+                $vm.vmName)          
+            }
             $row++
         }
     }
@@ -481,6 +499,7 @@ function pop_ipset_ws($sheet){
 
     $row=3
     $ipset = get-nsxipset -scopeID 'globalroot-0'
+
     foreach ($ip in $ipset) {
 
         $sheet.Cells.Item($row,1) = $ip.name
@@ -493,7 +512,9 @@ function pop_ipset_ws($sheet){
 
         $row++ # Increment Rows
     }
+
     $ipset_unv = get-nsxipset -scopeID 'universalroot-0'
+
     foreach ($ip in $ipset_unv) {
 
         $sheet.Cells.Item($row,1) = $ip.name
@@ -503,10 +524,10 @@ function pop_ipset_ws($sheet){
             $sheet.Cells.Item($row,4) = $valueNotDefined
         }
         else {$sheet.Cells.Item($row,4) = $ip.description}
-
         $row++ # Increment Rows
     }
 }
+
 ########################################################
 #    MACSETS Worksheet
 ########################################################
@@ -570,7 +591,8 @@ function services_ws($sheet){
     $sheet.Cells.Item(2,3) = "Application Protocol"
     $sheet.Cells.Item(2,4) = "Value"
     $sheet.Cells.Item(2,5) = "Universal"
-    $range2 = $sheet.Range("a2", "e2")
+    $sheet.Cells.Item(2,6) = "Object-ID"
+    $range2 = $sheet.Range("a2", "f2")
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -590,16 +612,17 @@ function pop_services_ws($sheet){
         $sheet.Cells.Item($row,4).NumberFormat = "@"
         $sheet.Cells.Item($row,4) = $svc.element.value
         $sheet.Cells.Item($row,5) = $svc.isUniversal
+        $sheet.Cells.Item($row,6) = $svc.objectID
         try 
         {
             $link_ref = "Services!" + ($sheet.Cells.Item($row,1)).address($false,$false)
-            if($services_lcl_ht.ContainsKey($svc.name) -eq $false)
+            if($services_lcl_ht.ContainsKey($svc.objectID) -eq $false)
             {
-                $services_lcl_ht.Add($svc.name, $link_ref)
+                $services_lcl_ht.Add($svc.objectID, $link_ref)
             }
         }
         catch [Exception]{
-            Write-Warning $svc.name + "already exists, manually create hyperlink reference"
+            Write-Warning $svc.objectID + "already exists, manually create hyperlink reference"
         }
       
         $row++ # Increment Rows
@@ -614,16 +637,17 @@ function pop_services_ws($sheet){
         $sheet.Cells.Item($row,4).NumberFormat = "@"
         $sheet.Cells.Item($row,4) = $svc.element.value
         $sheet.Cells.Item($row,5) = $svc.isUniversal
+        $sheet.Cells.Item($row,6) = $svc.objectID
         try 
         {
             $link_ref = "Services!" + ($sheet.Cells.Item($row,1)).address($false,$false)
-            if($services_uni_ht.ContainsKey($svc.name) -eq $false)
+            if($services_uni_ht.ContainsKey($svc.objectID) -eq $false)
             {
-                $services_uni_ht.Add($svc.name, $link_ref)
+                $services_uni_ht.Add($svc.objectID, $link_ref)
             }
         }
         catch [Exception]{
-            Write-Warning $svc.name + "already exists, manually create hyperlink reference"
+            Write-Warning $svc.objectID + "already exists, manually create hyperlink reference"
         }
       
         $row++ # Increment Rows
@@ -649,7 +673,8 @@ function service_groups_ws($sheet){
     $sheet.Cells.Item(2,2) = "Universal"
     $sheet.Cells.Item(2,3) = "Scope"
     $sheet.Cells.Item(2,4) = "Service Members"
-    $range2 = $sheet.Range("a2", "d2")
+    $sheet.Cells.Item(2,5) = "Object-ID"
+    $range2 = $sheet.Range("a2", "e2")
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -667,7 +692,7 @@ function pop_service_groups_ws($sheet){
         $sheet.Cells.Item($row,1).Font.Bold = $true
         $sheet.Cells.Item($row,2) = $svc_mem.isUniversal
         $sheet.Cells.Item($row,3) = $svc_mem.scope.name
-
+        $sheet.Cells.Item($row,5) = $svc_mem.objectId
         if (!$svc_mem.member)
         {
             $row++ # Increment Rows
@@ -676,7 +701,7 @@ function pop_service_groups_ws($sheet){
         {
             foreach ($member in $svc_mem.member)
             {
-                $result = $services_lcl_ht[$member.name]        
+                $result = $services_lcl_ht[$member.objectid]        
                 if([string]::IsNullOrWhiteSpace($result))
                 {
                      $sheet.Cells.Item($row,4) = $member.name
@@ -688,7 +713,7 @@ function pop_service_groups_ws($sheet){
                     $sheet.Cells.Item($row,4),
                     "",
                     $result,
-                    "Global (local) Service Definiton",
+                    $member.objectid,
                     $member.name)  
                     $row++ # Increment Rows
                 }
@@ -704,7 +729,7 @@ function pop_service_groups_ws($sheet){
         $sheet.Cells.Item($row,1).Font.Bold = $true
         $sheet.Cells.Item($row,2) = $svc_mem.isUniversal
         $sheet.Cells.Item($row,3) = $svc_mem.scope.name
-
+        $sheet.Cells.Item($row,5) = $svc_mem.objectId
         if (!$svc_mem.member) 
         {
                 $row++ # Increment Rows
@@ -713,7 +738,7 @@ function pop_service_groups_ws($sheet){
         {
             foreach ($member in $svc_mem.member)
             {
-                $result = $services_uni_ht[$member.name]        
+                $result = $services_uni_ht[$member.objectid]        
                 if([string]::IsNullOrWhiteSpace($result))
                 {
                      $sheet.Cells.Item($row,4) = $member.name
@@ -725,7 +750,7 @@ function pop_service_groups_ws($sheet){
                     $sheet.Cells.Item($row,4),
                     "",
                     $result,
-                    "Universal Service Definiton",
+                    $member.objectid,
                     $member.name)  
                     $row++ # Increment Rows
                 }
@@ -794,6 +819,7 @@ function pop_sec_tags_ws($sheet){
     }
 
 }
+
 ########################################################
 #    Exclusion list Worksheet
 ########################################################
@@ -824,9 +850,25 @@ function pop_ex_list_ws($sheet){
 
     foreach ($vm in $guests) {
         $sheet.Cells.Item($row,1) = $vm.name
+        $result = $vmaddressing_ht[$vm.name]        
+        if([string]::IsNullOrWhiteSpace($result))
+        {
+             $sheet.Cells.Item($row,1) = $vm.name
+        }
+        else 
+        {
+            Write-Host $vm.name
+            $link = $sheet.Hyperlinks.Add(
+            $sheet.Cells.Item($row,1),
+            "",
+            $result,
+            "Virtual Machine Information",
+            $vm.name)  
+        }
         $row++ # Increment Rows
     }
 }
+
 ########################################################
 #    VM Addressing - First NIC IP Address
 ########################################################
@@ -859,9 +901,22 @@ function pop_ip_address_ws($sheet){
     foreach ($vm in $guests) {
         $sheet.Cells.Item($row,1) = $vm.name
         $sheet.Cells.Item($row,2) = $vm.VMIPAddress
+        try 
+        {
+            $link_ref = "VM_Info!" + ($sheet.Cells.Item($row,1)).address($false,$false)
+            if($vmaddressing_ht.ContainsKey($vm.name) -eq $false)
+            {
+                $vmaddressing_ht.Add($vm.name, $link_ref)
+            }
+        }
+        catch [Exception]{
+            Write-Warning "already exists, manually create hyperlink reference"
+        }
+
         $row++ # Increment Rows
     }
 }
+
 ########################################################
 #    Global Functions
 ########################################################
