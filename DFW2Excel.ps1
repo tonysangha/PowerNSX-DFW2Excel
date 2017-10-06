@@ -24,8 +24,7 @@ if ( !(Get-Module -Name VMware.VimAutomation.Core -ErrorAction SilentlyContinue)
 }
 
 # Empty Hash-tables for use with Hyperlinks
-$services_uni_ht = @{}
-$services_lcl_ht = @{}
+$services_ht = @{}
 $vmaddressing_ht = @{}
 
 ########################################################
@@ -299,7 +298,13 @@ function l3_rules($sheet){
                 $sheet.Cells.Item($svcRow,14).Font.ColorIndex = 45
             } else {
                 foreach($service in $rule.services.service){
-                    $sheet.Cells.Item($svcRow,14) = $service.name
+                    if($service.protocolName)
+                    {
+                        $sheet.Cells.Item($svcRow,14) = $service.protocolName + "/" + $service.destinationPort
+                    }
+                    else {
+                        $sheet.Cells.Item($svcRow,14) = $service.name
+                    }
                     $svcRow++
                 }
             }
@@ -616,9 +621,9 @@ function pop_services_ws($sheet){
         try 
         {
             $link_ref = "Services!" + ($sheet.Cells.Item($row,1)).address($false,$false)
-            if($services_lcl_ht.ContainsKey($svc.objectID) -eq $false)
+            if($services_ht.ContainsKey($svc.objectID) -eq $false)
             {
-                $services_lcl_ht.Add($svc.objectID, $link_ref)
+                $services_ht.Add($svc.objectID, $link_ref)
             }
         }
         catch [Exception]{
@@ -641,9 +646,9 @@ function pop_services_ws($sheet){
         try 
         {
             $link_ref = "Services!" + ($sheet.Cells.Item($row,1)).address($false,$false)
-            if($services_uni_ht.ContainsKey($svc.objectID) -eq $false)
+            if($services_ht.ContainsKey($svc.objectID) -eq $false)
             {
-                $services_uni_ht.Add($svc.objectID, $link_ref)
+                $services_ht.Add($svc.objectID, $link_ref)
             }
         }
         catch [Exception]{
@@ -701,7 +706,7 @@ function pop_service_groups_ws($sheet){
         {
             foreach ($member in $svc_mem.member)
             {
-                $result = $services_lcl_ht[$member.objectid]        
+                $result = $services_ht[$member.objectid]        
                 if([string]::IsNullOrWhiteSpace($result))
                 {
                      $sheet.Cells.Item($row,4) = $member.name
@@ -738,7 +743,7 @@ function pop_service_groups_ws($sheet){
         {
             foreach ($member in $svc_mem.member)
             {
-                $result = $services_uni_ht[$member.objectid]        
+                $result = $services_ht[$member.objectid]        
                 if([string]::IsNullOrWhiteSpace($result))
                 {
                      $sheet.Cells.Item($row,4) = $member.name
