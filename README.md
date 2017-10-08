@@ -42,7 +42,7 @@ Once the script has finished running, remember to save your Excel Workbook to a 
 
 Version 1.0.0
 
-Release Date: **10/10/2017**
+Release Date: **08/10/2017**
 
 * Hyperlink Support in FW Rule sheet to: VMs, IPSets, Services, Security Groups
 * Sample output file updated
