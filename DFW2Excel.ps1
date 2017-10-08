@@ -26,6 +26,7 @@ if ( !(Get-Module -Name VMware.VimAutomation.Core -ErrorAction SilentlyContinue)
 # Empty Hash-tables for use with Hyperlinks
 $services_ht = @{}
 $vmaddressing_ht = @{}
+$ipsets_ht = @{}
 
 ########################################################
 #  Formatting/Functions Options for Excel Spreadsheet
@@ -250,9 +251,47 @@ function l3_rules($sheet){
 
                     if($source.type -eq "Ipv4Address"){
                         $sheet.Cells.Item($srcRow,8) = $source.value
-                    } elseif($source.type -eq "Ipv6Address") {
+                    } 
+                    elseif($source.type -eq "Ipv6Address") {
                         $sheet.Cells.Item($srcRow,8) = $source.value
-                    } else {
+                    } 
+                    elseif ($source.type -eq "IPSet") {
+                        $result = $ipsets_ht[$source.value]        
+                        if([string]::IsNullOrWhiteSpace($result))
+                        {
+                            $sheet.Cells.Item($srcRow,8) = $source.name
+                            $sheet.Cells.Item($srcRow,9) = $source.value
+                        }
+                        else 
+                        {
+                            $link = $sheet.Hyperlinks.Add(
+                            $sheet.Cells.Item($srcRow,8),
+                            "",
+                            $result,
+                            $source.value,
+                            $source.name)  
+                           $sheet.Cells.Item($srcRow,9) = $source.value
+                        }
+                     }
+                    elseif ($source.type -eq "VirtualMachine") {
+                        $result = $vmaddressing_ht[$source.value]        
+                        if([string]::IsNullOrWhiteSpace($result))
+                        {
+                            $sheet.Cells.Item($srcRow,8) = $source.name
+                            $sheet.Cells.Item($srcRow,9) = $source.value
+                        }
+                        else 
+                        {
+                            $link = $sheet.Hyperlinks.Add(
+                            $sheet.Cells.Item($srcRow,8),
+                            "",
+                            $result,
+                            $source.value,
+                            $source.name)  
+                           $sheet.Cells.Item($srcRow,9) = $source.value
+                        }
+                     }
+                     else {
                         $sheet.Cells.Item($srcRow,8) = $source.name
                         $sheet.Cells.Item($srcRow,9) = $source.value
                     }
@@ -279,9 +318,47 @@ function l3_rules($sheet){
                     $sheet.Cells.Item($dstRow,11) = $destination.type
                     if($destination.type -eq "Ipv4Address"){
                         $sheet.Cells.Item($dstRow,12) = $destination.value
-                        } elseif($destination.type -eq "Ipv6Address") {
+                        } 
+                    elseif($destination.type -eq "Ipv6Address") {
                             $sheet.Cells.Item($dstRow,12) = $destination.value
-                        } else {
+                        } 
+                    elseif ($destination.type -eq "IPSet") {
+                        $result = $ipsets_ht[$destination.value]        
+                        if([string]::IsNullOrWhiteSpace($result))
+                        {
+                            $sheet.Cells.Item($dstRow,12) = $destination.name
+                            $sheet.Cells.Item($dstRow,13) = $destination.value
+                        }
+                        else 
+                        {
+                            $link = $sheet.Hyperlinks.Add(
+                            $sheet.Cells.Item($dstRow,12),
+                            "",
+                            $result,
+                            $destination.value,
+                            $destination.name)  
+                           $sheet.Cells.Item($dstRow,13) = $destination.value
+                        }
+                     }
+                    elseif ($destination.type -eq "VirtualMachine") {
+                        $result = $vmaddressing_ht[$destination.value]        
+                        if([string]::IsNullOrWhiteSpace($result))
+                        {
+                            $sheet.Cells.Item($dstRow,12) = $destination.name
+                            $sheet.Cells.Item($dstRow,13) = $destination.value
+                        }
+                        else 
+                        {
+                            $link = $sheet.Hyperlinks.Add(
+                            $sheet.Cells.Item($dstRow,12),
+                            "",
+                            $result,
+                            $destination.value,
+                            $destination.name)  
+                           $sheet.Cells.Item($dstRow,13) = $destination.value
+                        }
+                     }
+                     else {
                             $sheet.Cells.Item($dstRow,12) = $destination.name
                             $sheet.Cells.Item($dstRow,13) = $destination.value
                         }
@@ -303,7 +380,23 @@ function l3_rules($sheet){
                         $sheet.Cells.Item($svcRow,14) = $service.protocolName + "/" + $service.destinationPort
                     }
                     else {
-                        $sheet.Cells.Item($svcRow,14) = $service.name
+                        # $sheet.Cells.Item($svcRow,14) = $service.name
+                        $result = $services_ht[$service.value]        
+                        if([string]::IsNullOrWhiteSpace($result))
+                        {
+                             $sheet.Cells.Item($svcRow,14) = $service.name
+                             $row++ # Increment Rows
+                        }
+                        else 
+                        {
+                            $link = $sheet.Hyperlinks.Add(
+                            $sheet.Cells.Item($svcRow,14),
+                            "",
+                            $result,
+                            $service.value,
+                            $service.name)  
+                            $row++ # Increment Rows
+                        }
                     }
                     $svcRow++
                 }
@@ -454,7 +547,7 @@ function pop_sg_ws($sheet){
             $sheet.Cells.Item($row,2) = $vm.vmID
             $sheet.Cells.Item($row,3) = $vm.vmName
 
-            $result = $vmaddressing_ht[$vm.vmName]        
+            $result = $vmaddressing_ht[$vm.vmID]        
             if([string]::IsNullOrWhiteSpace($result))
             {
                  $sheet.Cells.Item($row,3) = $vm.vmName
@@ -492,8 +585,9 @@ function ipset_ws($sheet){
     $sheet.Cells.Item(2,1) = "Name"
     $sheet.Cells.Item(2,2) = "Value"
     $sheet.Cells.Item(2,3) = "Universal"
-    $sheet.Cells.Item(2,4) = "Description"
-    $range2 = $sheet.Range("a2", "d2")
+    $sheet.Cells.Item(2,4) = "Object-ID"
+    $sheet.Cells.Item(2,5) = "Description"
+    $range2 = $sheet.Range("a2", "e2")
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -510,10 +604,22 @@ function pop_ipset_ws($sheet){
         $sheet.Cells.Item($row,1) = $ip.name
         $sheet.Cells.Item($row,2) = $ip.value
         $sheet.Cells.Item($row,3) = $ip.isUniversal
-        if(!$ip.description){
-            $sheet.Cells.Item($row,4) = $valueNotDefined
+        $sheet.Cells.Item($row,4) = $ip.objectId
+        try 
+        {
+            $link_ref = "IPSETS!" + ($sheet.Cells.Item($row,1)).address($false,$false)
+            if($ipsets_ht.ContainsKey($ip.objectID) -eq $false)
+            {
+                $ipsets_ht.Add($ip.objectID, $link_ref)
+            }
         }
-        else {$sheet.Cells.Item($row,4) = $ip.description}
+        catch [Exception]{
+            Write-Warning $ip.objectID + "already exists, manually create hyperlink reference"
+        }
+        if(!$ip.description){
+            $sheet.Cells.Item($row,5) = $valueNotDefined
+        }
+        else {$sheet.Cells.Item($row,5) = $ip.description}
 
         $row++ # Increment Rows
     }
@@ -525,10 +631,23 @@ function pop_ipset_ws($sheet){
         $sheet.Cells.Item($row,1) = $ip.name
         $sheet.Cells.Item($row,2) = $ip.value
         $sheet.Cells.Item($row,3) = $ip.isUniversal
-        if(!$ip.description){
-            $sheet.Cells.Item($row,4) = $valueNotDefined
+        $sheet.Cells.Item($row,4) = $ip.objectId
+        try 
+        {
+            $link_ref = "IPSETS!" + ($sheet.Cells.Item($row,1)).address($false,$false)
+            if($ipsets_ht.ContainsKey($ip.objectID) -eq $false)
+            {
+                $ipsets_ht.Add($ip.objectID, $link_ref)
+            }
         }
-        else {$sheet.Cells.Item($row,4) = $ip.description}
+        catch [Exception]{
+            Write-Warning $ip.objectID + "already exists, manually create hyperlink reference"
+        }
+
+        if(!$ip.description){
+            $sheet.Cells.Item($row,5) = $valueNotDefined
+        }
+        else {$sheet.Cells.Item($row,5) = $ip.description}
         $row++ # Increment Rows
     }
 }
@@ -841,7 +960,8 @@ function ex_list_ws($sheet){
     $range1.merge() | Out-Null
 
     $sheet.Cells.Item(2,1) = "VM Name"
-    $range2 = $sheet.Range("a2", "a2")
+    $sheet.Cells.Item(2,2) = "VM ID"
+    $range2 = $sheet.Range("a2", "b2")
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -854,11 +974,12 @@ function pop_ex_list_ws($sheet){
     $guests = Get-NsxFirewallExclusionListMember
 
     foreach ($vm in $guests) {
-        $sheet.Cells.Item($row,1) = $vm.name
-        $result = $vmaddressing_ht[$vm.name]        
+        # $sheet.Cells.Item($row,1) = $vm.name
+        $result = $vmaddressing_ht[$vm.id.TrimStart("VirtualMachine-")]        
         if([string]::IsNullOrWhiteSpace($result))
         {
              $sheet.Cells.Item($row,1) = $vm.name
+             $sheet.Cells.Item($row,2) = $vm.id.TrimStart("VirtualMachine-")
         }
         else 
         {
@@ -868,7 +989,8 @@ function pop_ex_list_ws($sheet){
             "",
             $result,
             "Virtual Machine Information",
-            $vm.name)  
+            $vm.name)
+            $sheet.Cells.Item($row,2) = $vm.id.TrimStart("VirtualMachine-")
         }
         $row++ # Increment Rows
     }
@@ -891,7 +1013,8 @@ function vm_ip_addresses_ws($sheet){
 
     $sheet.Cells.Item(2,1) = "VM Name"
     $sheet.Cells.Item(2,2) = "Guest IP Address"
-    $range2 = $sheet.Range("a2", "B2")
+    $sheet.Cells.Item(2,3) = "VM ID"
+    $range2 = $sheet.Range("a2", "c2")
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
     $range2.Font.Name = $subTitleFontName
@@ -901,17 +1024,19 @@ function vm_ip_addresses_ws($sheet){
 function pop_ip_address_ws($sheet){
 
     $row=3
-    $guests = Get-VM | Select Name, VMIPAddress
+    $guests = Get-VM | Select Name, VMIPAddress, id
 
     foreach ($vm in $guests) {
         $sheet.Cells.Item($row,1) = $vm.name
         $sheet.Cells.Item($row,2) = $vm.VMIPAddress
+        $vm_id = $vm.id.TrimStart("VirtualMachine-")
+        $sheet.Cells.Item($row,3) = $vm_id
         try 
         {
             $link_ref = "VM_Info!" + ($sheet.Cells.Item($row,1)).address($false,$false)
-            if($vmaddressing_ht.ContainsKey($vm.name) -eq $false)
+            if($vmaddressing_ht.ContainsKey($vm_id) -eq $false)
             {
-                $vmaddressing_ht.Add($vm.name, $link_ref)
+                $vmaddressing_ht.Add($vm_id, $link_ref)
             }
         }
         catch [Exception]{
