@@ -27,7 +27,7 @@ if ( !(Get-Module -Name VMware.VimAutomation.Core -ErrorAction SilentlyContinue)
 $services_ht = @{}
 $vmaddressing_ht = @{}
 $ipsets_ht = @{}
-
+$secgrp_ht = @{}
 ########################################################
 #  Formatting/Functions Options for Excel Spreadsheet
 ########################################################
@@ -273,6 +273,24 @@ function l3_rules($sheet){
                            $sheet.Cells.Item($srcRow,9) = $source.value
                         }
                      }
+                    elseif ($source.type -eq "SecurityGroup") {
+                        $result = $secgrp_ht[$source.value]        
+                        if([string]::IsNullOrWhiteSpace($result))
+                        {
+                            $sheet.Cells.Item($srcRow,8) = $source.name
+                            $sheet.Cells.Item($srcRow,9) = $source.value
+                        }
+                        else 
+                        {
+                            $link = $sheet.Hyperlinks.Add(
+                            $sheet.Cells.Item($srcRow,8),
+                            "",
+                            $result,
+                            $source.value,
+                            $source.name)  
+                           $sheet.Cells.Item($srcRow,9) = $source.value
+                        }
+                     }
                     elseif ($source.type -eq "VirtualMachine") {
                         $result = $vmaddressing_ht[$source.value]        
                         if([string]::IsNullOrWhiteSpace($result))
@@ -358,6 +376,24 @@ function l3_rules($sheet){
                            $sheet.Cells.Item($dstRow,13) = $destination.value
                         }
                      }
+                    elseif ($destination.type -eq "SecurityGroup") {
+                        $result = $secgrp_ht[$destination.value]        
+                        if([string]::IsNullOrWhiteSpace($result))
+                        {
+                            $sheet.Cells.Item($dstRow,12) = $destination.name
+                            $sheet.Cells.Item($dstRow,13) = $destination.value
+                        }
+                        else 
+                        {
+                            $link = $sheet.Hyperlinks.Add(
+                            $sheet.Cells.Item($dstRow,12),
+                            "",
+                            $result,
+                            $destination.value,
+                            $destination.name)  
+                           $sheet.Cells.Item($dstRow,13) = $destination.value
+                        }
+                     }                     
                      else {
                             $sheet.Cells.Item($dstRow,12) = $destination.name
                             $sheet.Cells.Item($dstRow,13) = $destination.value
@@ -444,6 +480,7 @@ function sg_ws($sheet){
     $sheet.Cells.Item(2,7) = "Dynamic Query Operator"
     $sheet.Cells.Item(2,8) = "Dynamic Query Criteria"
     $sheet.Cells.Item(2,9) = "Dynamic Query Value"
+    $sheet.Cells.Item(2,10) = "Object-ID"
     $range2 = $sheet.Range("a2", "j2")
     $range2.Font.Bold = $subTitleFontBold
     $range2.Interior.ColorIndex = $subTitleInteriorColor
@@ -456,6 +493,17 @@ function pop_sg_ws($sheet){
     $row = 3
     $sg = Get-NSXSecurityGroup -scopeID 'globalroot-0'
     foreach ($member in $sg){
+        try 
+        {
+            $link_ref = "Security_Groups!" + ($sheet.Cells.Item($row,1)).address($false,$false)
+            if($secgrp_ht.ContainsKey($member.objectID) -eq $false)
+            {
+                $secgrp_ht.Add($member.objectID, $link_ref)
+            }
+        }
+        catch [Exception]{
+            Write-Warning $member.objectID + "already exists, manually create hyperlink reference"
+        }
 
         if($member.dynamicMemberDefinition){
 
@@ -463,7 +511,7 @@ function pop_sg_ws($sheet){
             $sheet.Cells.Item($row,2) = $member.scope.name
             $sheet.Cells.Item($row,3) = $member.isUniversal
             $sheet.Cells.Item($row,4) = $member.inhertianceAllowed
-
+            $sheet.Cells.Item($row,10) = $member.objectId
             $sheet.Cells.Item($row,5) = "Dynamic"
 
             foreach ($entity in $member.dynamicMemberDefinition.dynamicSet.dynamicCriteria){
@@ -479,21 +527,31 @@ function pop_sg_ws($sheet){
             $sheet.Cells.Item($row,2) = $member.scope.name
             $sheet.Cells.Item($row,3) = $member.isUniversal
             $sheet.Cells.Item($row,4) = $member.inhertianceAllowed
-
+            $sheet.Cells.Item($row,10) = $member.objectId
             $sheet.Cells.Item($row,5) = "Static"
             $row++
         }
     }
     $sgu = Get-NSXSecurityGroup -scopeID 'universalroot-0'
     foreach ($member in $sgu){
-
+        try 
+        {
+            $link_ref = "Security_Groups!" + ($sheet.Cells.Item($row,1)).address($false,$false)
+            if($secgrp_ht.ContainsKey($member.objectID) -eq $false)
+            {
+                $secgrp_ht.Add($member.objectID, $link_ref)
+            }
+        }
+        catch [Exception]{
+            Write-Warning $member.objectID + "already exists, manually create hyperlink reference"
+        }
         if($member.dynamicMemberDefinition){
 
             $sheet.Cells.Item($row,1) = $member.name
             $sheet.Cells.Item($row,2) = $member.scope.name
             $sheet.Cells.Item($row,3) = $member.isUniversal
             $sheet.Cells.Item($row,4) = $member.inhertianceAllowed
-
+            $sheet.Cells.Item($row,10) = $member.objectId
             $sheet.Cells.Item($row,5) = "Dynamic"
 
             foreach ($entity in $member.dynamicMemberDefinition.dynamicSet.dynamicCriteria){
@@ -509,7 +567,7 @@ function pop_sg_ws($sheet){
             $sheet.Cells.Item($row,2) = $member.scope.name
             $sheet.Cells.Item($row,3) = $member.isUniversal
             $sheet.Cells.Item($row,4) = $member.inhertianceAllowed
-
+            $sheet.Cells.Item($row,10) = $member.objectId
             $sheet.Cells.Item($row,5) = "Static"
             $row++
         }
@@ -983,7 +1041,6 @@ function pop_ex_list_ws($sheet){
         }
         else 
         {
-            Write-Host $vm.name
             $link = $sheet.Hyperlinks.Add(
             $sheet.Cells.Item($row,1),
             "",

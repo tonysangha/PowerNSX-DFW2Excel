@@ -40,16 +40,23 @@ Once the script has finished running, remember to save your Excel Workbook to a 
 
 ### Release Notes
 
+Version 1.0.0
+
+Release Date: **10/10/2017**
+
+* Hyperlink Support in FW Rule sheet to: VMs, IPSets, Services, Security Groups
+* Sample output file updated
+
 Version 0.9.2
 
-Release Date: **10/06/2017**
+Release Date: **06/10/2017**
 
 * If Service Field is not a NSX Object, output raw `Protocol/Port` into Cell
 * Collasped hash table for local/universal services into a single table - as it's now using objectID for unique field
 
 Version 0.9.1
 
-Release Date: **10/06/2017**
+Release Date: **06/10/2017**
 
 * New Column - object-ids added to service and service group tabs.
 * Instead of using service names, using object-id's instead for hashtable to build hyperlink
@@ -58,7 +65,7 @@ Release Date: **10/06/2017**
 
 Version 0.9
 
-Release Date: **10/06/2017**
+Release Date: **06/10/2017**
 
 * If `$NSXDefaultConnection` exists, do not prompt for a new NSX Manager connection
 * When retrieving objects, specify scope - do not rely on defaults
