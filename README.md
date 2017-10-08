@@ -19,11 +19,22 @@ To run the script, make sure your Powershell Execution is set to *remotesigned*
 Set-ExecutionPolicy remotesigned
 ```
 
-PowerNSX is essential, therefore please ensure you have the latest version of PowerNSX installed,
-which can be updated in an administrative PowerShell terminal with the following command:
+PowerNSX is essential, therefore please ensure you have the latest supported version of PowerNSX installed,
+which can be installed in an administrative PowerShell terminal from the [PowerShell Gallery](https://www.powershellgallery.com/packages/PowerNSX/3.0.1047)
 
 ```Powershell
-Update-PowerNsx master
+Install-Module -Name PowerNSX 
+```
+The script has been tested against version **3.0.1047**, support for other PowerNSX versions is not tested. 
+
+To verify what PowerNSX version you have running execute the command:
+
+```Powershell
+Get-PowerNsxVersion
+
+Version  Path                                                                     Author        CompanyName
+-------  ----                                                                     ------        -----------
+3.0.1047 C:\Users\Tony\Documents\WindowsPowerShell\Modules\powernsx\PowerNSX.psm1 Nick Bradford VMware
 ```
 
 To execute the script, download it to your scripts folder and change into the folder from the PowerShell CLI
