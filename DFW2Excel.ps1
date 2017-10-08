@@ -1,6 +1,6 @@
 # Author:   Tony Sangha
 # Blog:    tonysangha.com
-# Version:  0.9
+# Version:  1.0
 # PowerCLI v6.0
 # PowerNSX v3.0
 # Purpose: Document NSX for vSphere Distributed Firewall
