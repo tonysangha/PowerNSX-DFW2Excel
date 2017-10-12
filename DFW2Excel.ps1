@@ -421,7 +421,7 @@ function l3_rules($sheet){
                         if([string]::IsNullOrWhiteSpace($result))
                         {
                              $sheet.Cells.Item($svcRow,14) = $service.name
-                             $row++ # Increment Rows
+                             # $svcRow++ # Increment Rows
                         }
                         else 
                         {
@@ -431,7 +431,7 @@ function l3_rules($sheet){
                             $result,
                             $service.value,
                             $service.name)  
-                            $row++ # Increment Rows
+                            # $svcRow++ # Increment Rows
                         }
                     }
                     $svcRow++
@@ -875,6 +875,19 @@ function pop_service_groups_ws($sheet){
         $sheet.Cells.Item($row,2) = $svc_mem.isUniversal
         $sheet.Cells.Item($row,3) = $svc_mem.scope.name
         $sheet.Cells.Item($row,5) = $svc_mem.objectId
+       
+        try 
+        {
+            $link_ref = "Service_Groups!" + ($sheet.Cells.Item($row,1)).address($false,$false)
+            if($services_ht.ContainsKey($svc_mem.objectID) -eq $false)
+            {
+                $services_ht.Add($svc_mem.objectID, $link_ref)
+            }
+        }
+        catch [Exception]{
+            Write-Warning $svc_mem.objectID + "already exists, manually create hyperlink reference"
+        }
+
         if (!$svc_mem.member)
         {
             $row++ # Increment Rows
@@ -912,6 +925,19 @@ function pop_service_groups_ws($sheet){
         $sheet.Cells.Item($row,2) = $svc_mem.isUniversal
         $sheet.Cells.Item($row,3) = $svc_mem.scope.name
         $sheet.Cells.Item($row,5) = $svc_mem.objectId
+        
+        try 
+        {
+            $link_ref = "Service_Groups!" + ($sheet.Cells.Item($row,1)).address($false,$false)
+            if($services_ht.ContainsKey($svc_mem.objectID) -eq $false)
+            {
+                $services_ht.Add($svc_mem.objectID, $link_ref)
+            }
+        }
+        catch [Exception]{
+            Write-Warning $svc_mem.objectID + "already exists, manually create hyperlink reference"
+        }
+
         if (!$svc_mem.member) 
         {
                 $row++ # Increment Rows
