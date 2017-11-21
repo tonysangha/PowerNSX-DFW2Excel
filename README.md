@@ -1,5 +1,7 @@
 # Document NSX-v DFW with PowerNSX
 
+**Note**: Script is now part of the [NSX-PowerOps](https://github.com/vmware/nsx-powerops) toolset!
+
 Script connects to NSX Manager and vCenter using the Powershell/Powercli 
 to download and create an MS Excel spreadsheet with your firewall configurations.
 
@@ -44,6 +46,22 @@ terminal and execute the command:
 .\DFW2Excel.ps1 
 ```
 
+By default the script will look for an active connection to NSX Manager, if none is present, the user will be prompted to connect to NSX Manager and vCenter Server. In addition, several parameters can be used to collect additional information, which are:
+
+* `-EnableIPDetection` Collect IP Addresses for Virtual Machines
+* `-GetSecTagMembers` Collect Security Tag VM Membership
+* `-GetSecGrpMembers` Collect Security Group VM Membership
+* `-StartMinimised` Microsoft Excel will not be visible to user
+* `-DocumentPath` Local path to save excel file
+
+If any of the parameters are **omitted** during execution, the script will default to false and no collection will be conducted!
+
+Below an example of using all these parameters together:
+
+```Powershell
+.\DFW2Excel.ps1 -StartMinised -EnableIPDetection -GetSecTagMembers -GetSecGrpMembers -DocumentPath c:\dfwconfig.xlsx
+```
+
 You are prompted to connect to an NSX Manager instance and enter your credentials, and PowerNSX also initiates a connection to vCenter. Please ensure you select yes and enter in the correct credentials. 
 Once a connection to NSX Manager and vCenter has been established, the script starts an Excel Workbook and populates the worksheets with the data as required. 
 
@@ -60,6 +78,7 @@ Release Date: **21/11/2017**
 * Added new worksheet titled _Environment Summary_
 * Security Group Statistics included to resolve issue: #19
 * Used PowerOps Excel COM object clean-up code for script
+* Switch parameters included to start script: `-EnableIpDetection` `-GetSecTagMembers` `-GetSecGrpMembers` -`StartMinimised` `-DocumentPath`
 
 Version 1.0.0
 

@@ -7,6 +7,8 @@
 
 param (
     [switch]$EnableIpDetection,
+    [switch]$GetSecTagMembers,
+    [switch]$GetSecGrpMembers,
     [switch]$StartMinimised,
     [string]$DocumentPath
 )
@@ -1328,46 +1330,6 @@ function pop_ip_address_ws($sheet){
 #    Global Functions
 ########################################################
 
-function user_input_vm_ips(){
-
-    # Ask user if they want to collect VM IP Addresses
-    Write-Host "`nCollection of VM IP Addresses has changed to use the value that is reported to VMware Tools, therefore
-                    VM Tools must be installed and running on VMs" -foregroundcolor "yellow"
-    try {
-        [ValidatePattern("[ny]")]$collect_vm_ips = Read-Host "`nWould you like to continue collection of VM IP Addresses (Default: N) Y/N?"
-    }
-    catch [Exception]{
-        Write-Host "Defaulting to NO" -foregroundcolor "yellow"
-    }
-    return $collect_vm_ips
-}
-
-function user_input_vm_members(){
-
-    # Ask user if they want to collect VM Security Group Membership
-    Write-Host "`nCollection of VM Security Group membership can be slow in large environments!" -foregroundcolor "yellow"
-    try {
-        [ValidatePattern("[ny]")]$collect_vm_members = Read-Host "`nWould you like to continue collection of VM Sec Grp Membership (Default: N) Y/N?"
-    }
-    catch [Exception]{
-        Write-Host "Defaulting to NO" -foregroundcolor "yellow"
-    }
-    return $collect_vm_members
-}
-
-function user_input_vm_stag_members(){
-
-    # Ask user if they want to collect VM Security Group Membership
-    Write-Host "`nCollection of VM Security Tag membership can be slow in large environments!" -foregroundcolor "yellow"
-    try {
-        [ValidatePattern("[ny]")]$collect_vm_stag_members = Read-Host "`nWould you like to continue collection of VM Sec Tag Membership (Default: N) Y/N?"
-    }
-    catch [Exception]{
-        Write-Host "Defaulting to NO" -foregroundcolor "yellow"
-    }
-    return $collect_vm_stag_members
-}
-
 If (-not $DefaultNSXConnection) 
 {
     Write-Warning "`nConnect to NSX Manager and vCenter Server needs to be established"
@@ -1377,22 +1339,44 @@ If (-not $DefaultNSXConnection)
 
 $version = Get-NsxManagerSystemSummary
 $major_version = $version.versionInfo.majorVersion
-$minor_version = $version.versionInfo.minorVersion
 
-# Only tested to run on NSX 6.2.x installations
+# Only tested to run on NSX 6.2.x & 6.3.x installations
 
 if($major_version -eq 6){
 
-    $collect_vm_ips = user_input_vm_ips
-    $collect_vm_members = user_input_vm_members
-    $collect_vm_stag_members = user_input_vm_stag_members
+    if ( $EnableIpDetection ) {
+        $collect_vm_ips = "y"
+        Write-Host "Collection of IP Addresses Enabled"
+    } 
+    elseif (-not $PSBoundParameters.ContainsKey("EnableIpDetection")) { 
+        $collect_vm_ips = "n"
+        Write-Warning "Collection of IP Addresses Disabled"
+    }
+
+    if ( $GetSecTagMembers ) {
+        $collect_vm_stag_members= "y"
+        Write-Host "Collection of Security Tag VM Membership Enabled"
+    } 
+    elseif (-not $PSBoundParameters.ContainsKey("GetSecTagMembers")) { 
+        $collect_vm_stag_members = "n"
+        Write-Warning "Collection of Security Tag VM Membership Disabled"
+    }
+
+    if ( $GetSecGrpMembers ) {
+        $collect_vm_members = "y"
+        Write-Host "Collection of Security Group VM Membership Enabled"
+    } 
+    elseif (-not $PSBoundParameters.ContainsKey("GetSecGrpMembers")) { 
+        $collect_vm_members = "n"
+        Write-Warning "Collection of Security Group VM Membership Disabled"
+    }
 
     if ($collect_vm_ips -eq "y") {
-        Write-Host "Collection of IP Addresses Enabled"
+        # Write-Host "Collection of IP Addresses Enabled"
         startExcel("y")
     }
     else{
-        Write-Warning "Collection of IP Addresses Disabled"
+        # Write-Warning "Collection of IP Addresses Disabled"
         startExcel("n")
     }
 }
