@@ -129,11 +129,18 @@ function startExcel(){
     $usedRange = $ws7.UsedRange
     $usedRange.EntireColumn.Autofit()
 
-    Write-Host "`nRetrieving DFW Layer 3 FW Rules" -foregroundcolor "magenta"
+    Write-Host "`nRetrieving Environment Summary" -foregroundcolor "magenta"
     $ws8 = $wb.Worksheets.Add()
-    $ws8.Name = "Layer 3 Firewall"
-    dfw_ws($ws8)
+    $ws8.Name = "Environment Summary"
+    env_ws($ws8)
     $usedRange = $ws8.UsedRange
+    $usedRange.EntireColumn.Autofit()
+
+    Write-Host "`nRetrieving DFW Layer 3 FW Rules" -foregroundcolor "magenta"
+    $ws9 = $wb.Worksheets.Add()
+    $ws9.Name = "Layer 3 Firewall"
+    dfw_ws($ws9)
+    $usedRange = $ws9.UsedRange
     $usedRange.EntireColumn.Autofit()
 }
 
@@ -615,7 +622,6 @@ function pop_sg_ws($sheet){
                 }
                 else 
                 {
-                    Write-Host $vm.vmName
                     $link = $sheet.Hyperlinks.Add(
                     $sheet.Cells.Item($row,3),
                     "",
@@ -633,6 +639,96 @@ function pop_sg_ws($sheet){
         $sheet.Cells.Item($row,2).Font.ColorIndex = 3
         $sheet.Cells.Item($row,3) = "<Collection Disabled>"
         $sheet.Cells.Item($row,3).Font.ColorIndex = 3
+    }
+}
+
+########################################################
+#    Envrionment Summary
+########################################################
+
+function env_ws($sheet){
+
+    $sheet.Cells.Item(1,1) = "NSX Environment Summary"
+    $sheet.Cells.Item(1,1).Font.Size = $titleFontSize
+    $sheet.Cells.Item(1,1).Font.Bold = $titleFontBold
+    $sheet.Cells.Item(1,1).Font.ColorIndex = $titleFontColorIndex
+    $sheet.Cells.Item(1,1).Font.Name = $titleFontName
+    $sheet.Cells.Item(1,1).Interior.ColorIndex = $titleInteriorColor
+    $range1 = $sheet.Range("a1", "j1")
+    $range1.merge() | Out-Null
+
+    $sys_sum = Get-NsxManagerSystemSummary
+    $ssoconfig = Get-NsxManagerSsoConfig
+    $vcconfig = Get-NsxManagerVcenterConfig
+    $ver = Get-PowerNSXVersion
+
+    $sheet.Cells.Item(2,1) = "PowerNSX version"
+    $sheet.Cells.Item(2,2) = $ver.version.toString()
+
+    $sheet.Cells.Item(3,1) = "NSX Manager Name"
+    $sheet.Cells.Item(3,2) = $sys_sum.hostName
+    
+    $sheet.Cells.Item(4,1) = "IPv4 Address"
+    $sheet.Cells.Item(4,2) = $sys_sum.Ipv4Address
+
+    $sheet.Cells.Item(5,1) = "SSO Lookup URL"
+    $sheet.Cells.Item(5,2) = $ssoconfig.ssoLookupServiceUrl    
+
+    $sheet.Cells.Item(6,1) = "SSO User Account"
+    $sheet.Cells.Item(6,2) = $ssoconfig.ssoAdminUsername
+    
+    $sheet.Cells.Item(7,1) = "vCenter Mapping"
+    $sheet.Cells.Item(7,2) = $vcconfig.ipAddress
+
+    $sheet.Cells.Item(8,1) = "NSX Manager Version"
+    $sheet.Cells.Item(8,2) = ($sys_sum.versionInfo.majorVersion + "." `
+                             + $sys_sum.versionInfo.minorVersion + "." `
+                             + $sys_sum.versionInfo.patchVersion + "." `
+                             + $sys_sum.versionInfo.buildNumber)
+    
+    $sheet.Cells.Item(9,1) = "Security Group Membership Statistics"
+    $sheet.Cells.Item(9,1).Font.Size = $titleFontSize
+    $sheet.Cells.Item(9,1).Font.Bold = $titleFontBold
+    $sheet.Cells.Item(9,1).Font.ColorIndex = $titleFontColorIndex
+    $sheet.Cells.Item(9,1).Font.Name = $titleFontName
+    $sheet.Cells.Item(9,1).Interior.ColorIndex = $titleInteriorColor
+    $range1 = $sheet.Range("a9", "j9")
+    $range1.merge() | Out-Null
+    
+    $sheet.Cells.Item(10,1) = "Security Group Name"
+    $sheet.Cells.Item(10,2) = "Translated VMs"
+    $sheet.Cells.Item(10,3) = "Translated IPs"
+    $range2 = $sheet.Range("a10", "c10")
+    $range2.Font.Bold = $subTitleFontBold
+    $range2.Interior.ColorIndex = $subTitleInteriorColor
+    $range2.Font.Name = $subTitleFontName
+    pop_env_ws($sheet)
+}
+
+function pop_env_ws($sheet){
+
+    $row = 11
+
+    ### Security Group Membership statistics
+
+    $sg = Get-NSXSecurityGroup
+
+    foreach($item in $sg){
+
+        $sheet.Cells.Item($row,1) = $item.name
+
+        $url_vms = "/api/2.0/services/securitygroup/" + $item.objectid + `
+                   "/translation/virtualmachines"
+        $url_ips = "/api/2.0/services/securitygroup/" + $item.objectid + `
+                   "/translation/ipaddresses"
+        
+        $sec_vm_stats = Invoke-NsxRestMethod -method get -uri $url_vms
+        $sheet.Cells.Item($row,2) = $sec_vm_stats.vmnodes.vmnode.Length 
+
+        $sec_ip_stats = Invoke-NsxRestMethod -method get -uri $url_ips
+        $sheet.Cells.Item($row,3) = $sec_ip_stats.ipNodes.ipNode.ipAddresses.Length
+
+        $row ++
     }
 }
 
