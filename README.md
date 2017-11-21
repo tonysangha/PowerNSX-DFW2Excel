@@ -59,6 +59,7 @@ Release Date: **21/11/2017**
 * Rudimentary validation check of yes/no prompt added
 * Added new worksheet titled _Environment Summary_
 * Security Group Statistics included to resolve issue: #19
+* Used PowerOps Excel COM object clean-up code for script
 
 Version 1.0.0
 

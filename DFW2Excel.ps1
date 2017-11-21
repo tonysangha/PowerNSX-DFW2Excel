@@ -5,6 +5,12 @@
 # PowerNSX v3.0
 # Purpose: Document NSX for vSphere Distributed Firewall
 
+param (
+    [switch]$EnableIpDetection,
+    [switch]$StartMinimised,
+    [string]$DocumentPath
+)
+
 # Import PowerNSX Module
 import-module PowerNSX
 
@@ -28,6 +34,56 @@ $services_ht = @{}
 $vmaddressing_ht = @{}
 $ipsets_ht = @{}
 $secgrp_ht = @{}
+########################################################
+# Cleanup Excel application object
+# We Need to call this for EVERY VARIABLE that references
+# an excel object.  __EVERY VARIABLE__
+########################################################
+function ReleaseObject {
+    param (
+        $Obj
+    )
+
+    Try {
+        $intRel = 0
+        Do { 
+            $intRel = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Obj)
+        } While ($intRel -gt  0)
+    }
+    Catch {
+        throw "Error releasing object: $_"
+    }
+    Finally {
+        [System.GC]::Collect()
+       
+    }
+}
+
+########################################################
+# Cleanup Excel application object
+# We Need to call this for EVERY VARIABLE that references
+# an excel object.  __EVERY VARIABLE__
+########################################################
+function ReleaseObject {
+    param (
+        $Obj
+    )
+
+    Try {
+        $intRel = 0
+        Do { 
+            $intRel = [System.Runtime.InteropServices.Marshal]::ReleaseComObject($Obj)
+        } While ($intRel -gt  0)
+    }
+    Catch {
+        throw "Error releasing object: $_"
+    }
+    Finally {
+        [System.GC]::Collect()
+       
+    }
+}
+
 ########################################################
 #  Formatting/Functions Options for Excel Spreadsheet
 ########################################################
@@ -65,7 +121,9 @@ New-VIProperty -Name VMIPAddress -ObjectType VirtualMachine `
 function startExcel(){
 
     $Excel = New-Object -Com Excel.Application
-    $Excel.visible = $True
+    if ( -not $StartMinimised ) { 
+        $Excel.visible = $True
+    }
     $Excel.DisplayAlerts = $false
     $wb = $Excel.Workbooks.Add()
 
@@ -142,6 +200,27 @@ function startExcel(){
     dfw_ws($ws9)
     $usedRange = $ws9.UsedRange
     $usedRange.EntireColumn.Autofit()
+    
+    # Must cleanup manually or excel process wont quit.
+    ReleaseObject -Obj $ws1    
+    ReleaseObject -Obj $ws2
+    ReleaseObject -Obj $ws3    
+    ReleaseObject -Obj $ws4    
+    ReleaseObject -Obj $ws5    
+    ReleaseObject -Obj $ws6    
+    ReleaseObject -Obj $ws7
+    ReleaseObject -Obj $ws8    
+    ReleaseObject -Obj $ws9    
+    ReleaseObject -Obj $usedRange
+    
+    if ( $DocumentPath -and (test-path (split-path -parent $DocumentPath))) { 
+        $wb.SaveAs($DocumentPath)
+        $wb.close(0)
+        $Excel.Quit()
+        ReleaseObject -Obj $Excel
+        ReleaseObject -Obj $wb
+        
+    }
 }
 
 ########################################################
