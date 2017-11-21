@@ -1,6 +1,6 @@
 # Document NSX-v DFW with PowerNSX
 
-**Note: Script is now part of the [NSX-PowerOps](https://github.com/vmware/nsx-powerops) toolset! NSX-PowerOps will not be the main repository for issues and new features for this tool. Current as of 21st November 2017**
+### Note: Script is now part of the [NSX-PowerOps](https://github.com/vmware/nsx-powerops) toolset! NSX-PowerOps will now be the main repository for issues and new features for this tool. Current as of 21st November 2017
 
 Script connects to NSX Manager and vCenter using the Powershell/Powercli 
 to download and create an MS Excel spreadsheet with your firewall configurations.
