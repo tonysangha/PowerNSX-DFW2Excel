@@ -59,7 +59,7 @@ If any of the parameters are **omitted** during execution, the script will defau
 Below an example of using all these parameters together:
 
 ```Powershell
-.\DFW2Excel.ps1 -StartMinised -EnableIPDetection -GetSecTagMembers -GetSecGrpMembers -DocumentPath c:\dfwconfig.xlsx
+.\DFW2Excel.ps1 -StartMinimised -EnableIPDetection -GetSecTagMembers -GetSecGrpMembers -DocumentPath c:\dfwconfig.xlsx
 ```
 
 You are prompted to connect to an NSX Manager instance and enter your credentials, and PowerNSX also initiates a connection to vCenter. Please ensure you select yes and enter in the correct credentials. 
