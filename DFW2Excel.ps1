@@ -643,7 +643,7 @@ function pop_sg_ws($sheet){
 }
 
 ########################################################
-#    Envrionment Summary
+#    Environment Summary
 ########################################################
 
 function env_ws($sheet){
@@ -1101,7 +1101,7 @@ function sec_tags_ws($sheet){
 }
 
 function pop_sec_tags_ws($sheet){
-
+    
     $row=3
     $ST = get-nsxsecuritytag -includesystem
 
@@ -1122,17 +1122,25 @@ function pop_sec_tags_ws($sheet){
 
     $row ++
 
-    # Retrieve a list of all Tag Assignments
-    $tag_assign = $ST | Get-NsxSecurityTagAssignment
-
     # Traverse VM membership and populate spreadsheet
-    foreach ($mem in $tag_assign){
+    if ($collect_vm_stag_members -eq "y") {
+        
+        # Retrieve a list of all Tag Assignments
+        $tag_assign = $ST | Get-NsxSecurityTagAssignment        
+        
+        foreach ($mem in $tag_assign){
 
-        $sheet.Cells.Item($row,1) = $mem.SecurityTag.name
-        $sheet.Cells.Item($row,2) = $mem.VirtualMachine.name
-        $row++
+            $sheet.Cells.Item($row,1) = $mem.SecurityTag.name
+            $sheet.Cells.Item($row,2) = $mem.VirtualMachine.name
+            $row++
+        }
     }
-
+    else {
+        $sheet.Cells.Item($row,1) = "<Collection Disabled>"
+        $sheet.Cells.Item($row,1).Font.ColorIndex = 3
+        $sheet.Cells.Item($row,2) = "<Collection Disabled>"
+        $sheet.Cells.Item($row,2).Font.ColorIndex = 3
+    }
 }
 
 ########################################################
@@ -1260,12 +1268,25 @@ function user_input_vm_members(){
     # Ask user if they want to collect VM Security Group Membership
     Write-Host "`nCollection of VM Security Group membership can be slow in large environments!" -foregroundcolor "yellow"
     try {
-        [ValidatePattern("[ny]")]$collect_vm_members = Read-Host "`nWould you like to continue collection of VM Membership (Default: N) Y/N?"
+        [ValidatePattern("[ny]")]$collect_vm_members = Read-Host "`nWould you like to continue collection of VM Sec Grp Membership (Default: N) Y/N?"
     }
     catch [Exception]{
         Write-Host "Defaulting to NO" -foregroundcolor "yellow"
     }
     return $collect_vm_members
+}
+
+function user_input_vm_stag_members(){
+
+    # Ask user if they want to collect VM Security Group Membership
+    Write-Host "`nCollection of VM Security Tag membership can be slow in large environments!" -foregroundcolor "yellow"
+    try {
+        [ValidatePattern("[ny]")]$collect_vm_stag_members = Read-Host "`nWould you like to continue collection of VM Sec Tag Membership (Default: N) Y/N?"
+    }
+    catch [Exception]{
+        Write-Host "Defaulting to NO" -foregroundcolor "yellow"
+    }
+    return $collect_vm_stag_members
 }
 
 If (-not $DefaultNSXConnection) 
@@ -1285,6 +1306,7 @@ if($major_version -eq 6){
 
     $collect_vm_ips = user_input_vm_ips
     $collect_vm_members = user_input_vm_members
+    $collect_vm_stag_members = user_input_vm_stag_members
 
     if ($collect_vm_ips -eq "y") {
         Write-Host "Collection of IP Addresses Enabled"

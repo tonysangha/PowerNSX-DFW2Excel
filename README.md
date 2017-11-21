@@ -55,7 +55,7 @@ Version 1.0.1
 
 Release Date: **21/11/2017**
 
-* Added prompt to check if user wants to get VM Security Group Membership
+* Added prompt to check if user wants to get VM Security Group & Tag Membership
 * Rudimentary validation check of yes/no prompt added
 * Added new worksheet titled _Environment Summary_
 * Security Group Statistics included to resolve issue: #19
