@@ -51,6 +51,13 @@ Once the script has finished running, remember to save your Excel Workbook to a 
 
 ### Release Notes
 
+Version 1.0.1
+
+Release Date: **21/11/2017**
+
+* Added prompt to check if user wants to get VM Security Group Membership
+* Rudimentary validation check of yes/no prompt added
+
 Version 1.0.0
 
 Release Date: **08/10/2017**

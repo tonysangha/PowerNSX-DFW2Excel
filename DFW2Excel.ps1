@@ -1,6 +1,6 @@
 # Author:   Tony Sangha
 # Blog:    tonysangha.com
-# Version:  1.0
+# Version:  1.0.1
 # PowerCLI v6.0
 # PowerNSX v3.0
 # Purpose: Document NSX for vSphere Distributed Firewall
@@ -594,34 +594,45 @@ function pop_sg_ws($sheet){
 
     $row++
 
-    foreach ($member in $sg){
+    if ($collect_vm_members -eq "y") {
+        Write-Host "Collection of VM Sec Membership Enabled"
+        
+        foreach ($member in $sg){
 
-        $members = $member | Get-NSXSecurityGroupEffectiveMember
+            $members = $member | Get-NSXSecurityGroupEffectiveMember
 
-        $sheet.Cells.Item($row,1) = $member.name
+            $sheet.Cells.Item($row,1) = $member.name
 
-        foreach ($vm in $members.virtualmachine.vmnode)
-        {
-            $sheet.Cells.Item($row,2) = $vm.vmID
-            $sheet.Cells.Item($row,3) = $vm.vmName
-
-            $result = $vmaddressing_ht[$vm.vmID]        
-            if([string]::IsNullOrWhiteSpace($result))
+            foreach ($vm in $members.virtualmachine.vmnode)
             {
-                 $sheet.Cells.Item($row,3) = $vm.vmName
+                $sheet.Cells.Item($row,2) = $vm.vmID
+                $sheet.Cells.Item($row,3) = $vm.vmName
+
+                $result = $vmaddressing_ht[$vm.vmID]        
+                if([string]::IsNullOrWhiteSpace($result))
+                {
+                     $sheet.Cells.Item($row,3) = $vm.vmName
+                }
+                else 
+                {
+                    Write-Host $vm.vmName
+                    $link = $sheet.Hyperlinks.Add(
+                    $sheet.Cells.Item($row,3),
+                    "",
+                    $result,
+                    "Virtual Machine Information",
+                    $vm.vmName)          
+                }
+                $row++
             }
-            else 
-            {
-                Write-Host $vm.vmName
-                $link = $sheet.Hyperlinks.Add(
-                $sheet.Cells.Item($row,3),
-                "",
-                $result,
-                "Virtual Machine Information",
-                $vm.vmName)          
-            }
-            $row++
         }
+    }
+    else {
+        Write-Host "Collection of VM Sec Membership Disabled"
+        $sheet.Cells.Item($row,2) = "<Collection Disabled>"
+        $sheet.Cells.Item($row,2).Font.ColorIndex = 3
+        $sheet.Cells.Item($row,3) = "<Collection Disabled>"
+        $sheet.Cells.Item($row,3).Font.ColorIndex = 3
     }
 }
 
@@ -935,7 +946,7 @@ function pop_service_groups_ws($sheet){
             }
         }
         catch [Exception]{
-            Write-Warning $svc_mem.objectID + "already exists, manually create hyperlink reference"
+            Write-Warning $svc_mem.objectID + "already exists, manually create hyper link reference"
         }
 
         if (!$svc_mem.member) 
@@ -1139,13 +1150,31 @@ function user_input_vm_ips(){
     # Ask user if they want to collect VM IP Addresses
     Write-Host "`nCollection of VM IP Addresses has changed to use the value that is reported to VMware Tools, therefore
                     VM Tools must be installed and running on VMs" -foregroundcolor "yellow"
-    $collect_vm_ips = Read-Host "`nWould you like to continue collection of VM IP Addresses (Default: N) Y/N?"
+    try {
+        [ValidatePattern("[ny]")]$collect_vm_ips = Read-Host "`nWould you like to continue collection of VM IP Addresses (Default: N) Y/N?"
+    }
+    catch [Exception]{
+        Write-Host "Defaulting to NO" -foregroundcolor "yellow"
+    }
     return $collect_vm_ips
+}
+
+function user_input_vm_members(){
+
+    # Ask user if they want to collect VM Security Group Membership
+    Write-Host "`nCollection of VM Security Group membership can be slow in large environments!" -foregroundcolor "yellow"
+    try {
+        [ValidatePattern("[ny]")]$collect_vm_members = Read-Host "`nWould you like to continue collection of VM Membership (Default: N) Y/N?"
+    }
+    catch [Exception]{
+        Write-Host "Defaulting to NO" -foregroundcolor "yellow"
+    }
+    return $collect_vm_members
 }
 
 If (-not $DefaultNSXConnection) 
 {
-    Write-Warning "`nConnect to NSX Manager and vCenter Server needs to be establised"
+    Write-Warning "`nConnect to NSX Manager and vCenter Server needs to be established"
     $nsx_mgr = Read-Host "`nIP or FQDN of NSX Manager? "
     Connect-NSXServer -NSXServer $nsx_mgr
 }
@@ -1159,6 +1188,7 @@ $minor_version = $version.versionInfo.minorVersion
 if($major_version -eq 6){
 
     $collect_vm_ips = user_input_vm_ips
+    $collect_vm_members = user_input_vm_members
 
     if ($collect_vm_ips -eq "y") {
         Write-Host "Collection of IP Addresses Enabled"
